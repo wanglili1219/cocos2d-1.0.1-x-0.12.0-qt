@@ -80,3 +80,4 @@ Device-Release/
 TAGS
 *.vc2010.opensdf
 *.vc2010.sdf
+/Win32/

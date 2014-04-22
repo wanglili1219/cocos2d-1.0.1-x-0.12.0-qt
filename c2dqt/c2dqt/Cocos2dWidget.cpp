@@ -54,16 +54,13 @@ void Cocos2dWidget::updateDraw(){
 }  
 void Cocos2dWidget::mousePressEvent(QMouseEvent* evt)  
 {  
-    //WM_LBUTTONDOWN
-    CCLOG("mousePressEvent %d %d", evt->x(), evt->y());
 	short x = (short)evt->x();
 	short y = (short)evt->y();
     CCEGLView::sharedOpenGLView().WindowProc(WM_LBUTTONDOWN, MK_LBUTTON, MAKELONG(x, y));
 }  
 
 void Cocos2dWidget::mouseReleaseEvent(QMouseEvent * evt)
-{  //WM_LBUTTONUP
-    CCLOG("mouseReleaseEvent %d %d", evt->x(), evt->y());
+{
 	short x = (short)evt->x();
 	short y = (short)evt->y();
 	CCEGLView::sharedOpenGLView().WindowProc(WM_LBUTTONUP, MK_LBUTTON, MAKELONG(x, y));
@@ -71,18 +68,20 @@ void Cocos2dWidget::mouseReleaseEvent(QMouseEvent * evt)
 
 void Cocos2dWidget::mouseDoubleClickEvent(QMouseEvent *)
 {
-    CCLOG("mouseDoubleClickEvent");
+
 }
 
-void Cocos2dWidget::mouseMoveEvent(QMouseEvent *)
+void Cocos2dWidget::mouseMoveEvent(QMouseEvent * evt)
 {
-    //WM_MOUSEMOVE
+    short x = (short)evt->x();
+	short y = (short)evt->y();
+    CCEGLView::sharedOpenGLView().WindowProc(WM_MOUSEMOVE, MK_LBUTTON, MAKELONG(x, y));
 }
 
 void Cocos2dWidget::keyPressEvent(QKeyEvent *evt)  
 {  
-    //  
-}  
+ 
+}
 
 void Cocos2dWidget::closeEvent(QCloseEvent *event)
 {

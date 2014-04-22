@@ -1,6 +1,17 @@
 #include "HelloWorldScene.h"
 
-USING_NS_CC;
+#define BACKGROUD_SCALE 1.5
+
+HelloWorld::HelloWorld()
+    : m_backgroud(0)
+{
+
+}
+
+HelloWorld::~HelloWorld()
+{
+
+}
 
 CCScene* HelloWorld::scene()
 {
@@ -46,32 +57,83 @@ bool HelloWorld::init()
 
 	/////////////////////////////
 	// 3. add your codes below...
-
-	// add a label shows "Hello World"
-	// create and initialize a label
-    CCLabelTTF* pLabel = CCLabelTTF::labelWithString("Hello World", "Arial", 24);
-	// ask director the window size
 	CCSize size = CCDirector::sharedDirector()->getWinSize();
 
-	// position the label on the center of the screen
-	pLabel->setPosition( ccp(size.width / 2, size.height - 50) );
-
-	// add the label as a child to this layer
-	//this->addChild(pLabel, 1);
-
 	// add "HelloWorld" splash screen"
-	CCSprite* pSprite = CCSprite::spriteWithFile("coc.jpg");
+	m_backgroud = CCSprite::spriteWithFile("backgroud.jpg");
+    if (m_backgroud == NULL){
+        return false;
+    }
 
+    m_backgroud->setScale(BACKGROUD_SCALE);
 	// position the sprite on the center of the screen
-	pSprite->setPosition( ccp(size.width/2, size.height/2) );
+	m_backgroud->setPosition( ccp(size.width/2, size.height/2) );
 
 	// add the sprite as a child to this layer
-	this->addChild(pSprite, 0);
-	
+	this->addChild(m_backgroud, 0);
+
+    m_bIsTouchEnabled = true;
+
 	return true;
+}
+
+void HelloWorld::registerWithTouchDispatcher(void)
+{
+    CCTouchDispatcher::sharedDispatcher()->addTargetedDelegate(this, INT_MIN+1, true);
 }
 
 void HelloWorld::menuCloseCallback(CCObject* pSender)
 {
 	cocos2d::CCDirector::sharedDirector()->end();
+}
+
+bool HelloWorld::ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent)
+{
+    return true;
+}
+
+void HelloWorld::ccTouchMoved(CCTouch *pTouch, CCEvent *pEvent)
+{
+    if (!m_backgroud){
+        return;
+    }
+
+    CCPoint pos = pTouch->locationInView(0);
+    CCPoint prepos = pTouch->previousLocationInView(0);
+    float nx = pos.x - prepos.x;
+    float ny = pos.y - prepos.y;
+    float sprx = this->getPositionX() + nx;
+    float spry = this->getPositionY() - ny;
+    CCSize size = CCDirector::sharedDirector()->getWinSize();
+	CCSize sprsize = m_backgroud->getContentSize();
+	float sprscale = m_backgroud->getScale();
+	float lx = (sprsize.width * sprscale * 0.5 - size.width * 0.5);
+	float ly = (sprsize.height * sprscale * 0.5 - size.height * 0.5);
+    if (sprx > lx){
+        sprx = lx;
+    }
+
+    if (spry > ly){
+        spry = ly;
+    }
+
+    if (sprx < - lx){
+        sprx = - lx;
+    }
+
+    if (spry < - ly){
+        spry = - ly;
+    }
+
+    this->setPosition(ccp(sprx, spry));
+}
+
+void HelloWorld::ccTouchEnded(CCTouch *pTouch, CCEvent *pEvent)
+{
+
+}
+
+void HelloWorld::ccTouchCancelled(CCTouch *pTouch, CCEvent *pEvent)
+{
+
 }

@@ -11,7 +11,6 @@
 
 USING_NS_CC;  
   
-  
 class Cocos2dWidget: public QWidget{  
     Q_OBJECT  
 public:  

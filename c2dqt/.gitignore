@@ -1,0 +1,43 @@
+
+#ignore thumbnails created by windows
+Thumbs.db
+#Ignore files build by Visual Studio
+*.obj
+*.exe
+*.pdb
+*.aps
+*.vcproj.*.user
+*.vcxproj.user
+*.vspscc
+*_i.c
+*.i
+*.icf
+*_p.c
+*.ncb
+*.suo
+*.tlb
+*.tlh
+*.bak
+*.cache
+*.ilk
+*.log
+[Bb]in
+[Dd]ebug*/
+*.sbr
+
+# Ignore files build by ndk and eclipse
+libs/
+bin/
+obj/
+assets/
+dlls/
+GeneratedFiles/
+.classpath
+.project
+.cproject
+
+# Ignore files build by linux
+*.o
+
+
+*.user

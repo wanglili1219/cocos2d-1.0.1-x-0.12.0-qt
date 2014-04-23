@@ -3,8 +3,10 @@
 
 #include<cmath>  
 USING_NS_CC;  
-  
-Cocos2dWidget::Cocos2dWidget(QWidget* parent,const char* name):QWidget(parent,Qt::MSWindowsOwnDC)  
+ extern MainScene* g_mainScene;
+Cocos2dWidget::Cocos2dWidget(QWidget* parent,const char* name)
+		: QWidget(parent,Qt::MSWindowsOwnDC)  
+			, layer(0)
 {  
     this->setFixedSize(480, 320);  
     this->setWindowTitle("Editor");  
@@ -81,4 +83,13 @@ void Cocos2dWidget::keyPressEvent(QKeyEvent *evt)
 void Cocos2dWidget::closeEvent(QCloseEvent *event)
 {
     QWidget::closeEvent(event);
+}
+
+void Cocos2dWidget::curveChanged(int row)
+{
+	//CCDirector *pDirector = CCDirector::sharedDirector();
+	//MainScene* mainscene = (MainScene*)pDirector->getRunningScene();
+	if (g_mainScene){
+		g_mainScene->setSelMapType(row);
+	}
 }

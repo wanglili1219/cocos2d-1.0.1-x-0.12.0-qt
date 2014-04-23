@@ -28,6 +28,9 @@ public:
    virtual void mouseMoveEvent(QMouseEvent *);
    virtual void mouseDoubleClickEvent(QMouseEvent *);
 
+private slots:
+    void curveChanged(int row);
+
 private:   
     void updateDraw(); 
     CCEGLView * eglView;  

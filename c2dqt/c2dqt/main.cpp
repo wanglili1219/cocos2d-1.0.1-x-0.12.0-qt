@@ -3,7 +3,6 @@
 #include <QtGui/QHBoxLayout>
 #include <QtGui/qlistwidget>
 #include <QtGui/QScrollBar>
-#include <QtGui/QProgressBar>
 #include "cocos2d.h"
 #include "CCEGLView.h"
 #include "AppDelegate.h"
@@ -38,6 +37,8 @@ int main(int argc, char *argv[])
     QSize iconsize(200, 200);
     ui->listWidget->setIconSize(iconsize);
     ui->listWidget->setMinimumHeight(iconsize.height());
+	QObject::connect(ui->listWidget, SIGNAL(currentRowChanged(int)), pCocosWidget, SLOT(curveChanged(int)));
+
     for (int i = 1; i < 6; ++i){
         QListWidgetItem *item = new QListWidgetItem;
     

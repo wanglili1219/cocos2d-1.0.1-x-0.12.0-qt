@@ -5,11 +5,11 @@
 
 USING_NS_CC;
 
-class HelloWorld : public cocos2d::CCLayer
+class MainScene : public cocos2d::CCLayer
 {
 public:
-     HelloWorld();
-     ~HelloWorld();
+     MainScene();
+     ~MainScene();
 
 public:
 	// Here's a difference. Method 'init' in cocos2d-x returns bool, instead of returning 'id' in cocos2d-iphone
@@ -30,7 +30,7 @@ public:
 	virtual void menuCloseCallback(CCObject* pSender);
 
 	// implement the "static node()" method manually
-	LAYER_NODE_FUNC(HelloWorld);
+	LAYER_NODE_FUNC(MainScene);
 
 private:
     CCSprite* m_backgroud;

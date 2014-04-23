@@ -1,25 +1,25 @@
-#include "HelloWorldScene.h"
+#include "MainScene.h"
 
 #define BACKGROUD_SCALE 1.5
 
-HelloWorld::HelloWorld()
+MainScene::MainScene()
     : m_backgroud(0)
 {
 
 }
 
-HelloWorld::~HelloWorld()
+MainScene::~MainScene()
 {
 
 }
 
-CCScene* HelloWorld::scene()
+CCScene* MainScene::scene()
 {
 	// 'scene' is an autorelease object
 	CCScene *scene = CCScene::node();
 	
 	// 'layer' is an autorelease object
-	HelloWorld *layer = HelloWorld::node();
+	MainScene *layer = MainScene::node();
 
 	// add layer as a child to scene
 	scene->addChild(layer);
@@ -29,7 +29,7 @@ CCScene* HelloWorld::scene()
 }
 
 // on "init" you need to initialize your instance
-bool HelloWorld::init()
+bool MainScene::init()
 {
 	//////////////////////////////
 	// 1. super init first
@@ -47,7 +47,7 @@ bool HelloWorld::init()
 										"CloseNormal.png",
 										"CloseSelected.png",
 										this,
-										menu_selector(HelloWorld::menuCloseCallback) );
+										menu_selector(MainScene::menuCloseCallback) );
 	pCloseItem->setPosition( ccp(CCDirector::sharedDirector()->getWinSize().width - 20, 20) );
 
 	// create menu, it's an autorelease object
@@ -77,22 +77,22 @@ bool HelloWorld::init()
 	return true;
 }
 
-void HelloWorld::registerWithTouchDispatcher(void)
+void MainScene::registerWithTouchDispatcher(void)
 {
     CCTouchDispatcher::sharedDispatcher()->addTargetedDelegate(this, INT_MIN+1, true);
 }
 
-void HelloWorld::menuCloseCallback(CCObject* pSender)
+void MainScene::menuCloseCallback(CCObject* pSender)
 {
 	cocos2d::CCDirector::sharedDirector()->end();
 }
 
-bool HelloWorld::ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent)
+bool MainScene::ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent)
 {
     return true;
 }
 
-void HelloWorld::ccTouchMoved(CCTouch *pTouch, CCEvent *pEvent)
+void MainScene::ccTouchMoved(CCTouch *pTouch, CCEvent *pEvent)
 {
     if (!m_backgroud){
         return;
@@ -128,12 +128,12 @@ void HelloWorld::ccTouchMoved(CCTouch *pTouch, CCEvent *pEvent)
     this->setPosition(ccp(sprx, spry));
 }
 
-void HelloWorld::ccTouchEnded(CCTouch *pTouch, CCEvent *pEvent)
+void MainScene::ccTouchEnded(CCTouch *pTouch, CCEvent *pEvent)
 {
 
 }
 
-void HelloWorld::ccTouchCancelled(CCTouch *pTouch, CCEvent *pEvent)
+void MainScene::ccTouchCancelled(CCTouch *pTouch, CCEvent *pEvent)
 {
 
 }

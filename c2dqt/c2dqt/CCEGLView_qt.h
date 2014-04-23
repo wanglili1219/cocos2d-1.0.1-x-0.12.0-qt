@@ -4,13 +4,13 @@
 
 USING_NS_CC;
 
-class ParticleView : public CCEGLView
+class CCEGLView_qt : public CCEGLView
 {
 public:
-	ParticleView(void);
-	~ParticleView(void);
+	CCEGLView_qt(void);
+	~CCEGLView_qt(void);
 
-	static ParticleView* sharedOpenGLViewWithHwnd(HWND mHWND);
+	static CCEGLView_qt* sharedOpenGLViewWithHwnd(HWND mHWND);
 	
 	bool CreateWithHwnd(HWND mHwnd);
 

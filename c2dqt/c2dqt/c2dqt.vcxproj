@@ -95,9 +95,9 @@
     <ClCompile Include="GeneratedFiles\Release\moc_Cocos2dWidget.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="HelloWorldScene.cpp" />
+    <ClCompile Include="MainSceneScene.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="ParticleView.cpp" />
+    <ClCompile Include="CCEGLView_qt.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="c2dqt.h">
@@ -126,8 +126,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AppMacros.h" />
-    <ClInclude Include="HelloWorldScene.h" />
-    <ClInclude Include="ParticleView.h" />
+    <ClInclude Include="MainScene.h" />
+    <ClInclude Include="CCEGLView_qt.h" />
     <CustomBuild Include="Cocos2dWidget.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing Cocos2dWidget.h...</Message>

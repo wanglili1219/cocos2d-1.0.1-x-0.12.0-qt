@@ -1,20 +1,20 @@
-#include "ParticleView.h"
+#include "CCEGLView_qt.h"
 #include "EGL/egl.h"
 #include "gles/gl.h"
 extern  bool CheckTouchSupport();
 
 
-ParticleView::ParticleView(void)
+CCEGLView_qt::CCEGLView_qt(void)
 {
 
 }
 	
-ParticleView::~ParticleView(void)
+CCEGLView_qt::~CCEGLView_qt(void)
 {
 	
 }
 
-bool ParticleView::CreateWithHwnd(HWND mHwnd)
+bool CCEGLView_qt::CreateWithHwnd(HWND mHwnd)
 {
 	
 	bool bRet = false;
@@ -49,12 +49,12 @@ bool ParticleView::CreateWithHwnd(HWND mHwnd)
 	return bRet;
 }
 
-ParticleView* ParticleView::sharedOpenGLViewWithHwnd(HWND mHWND)
+CCEGLView_qt* CCEGLView_qt::sharedOpenGLViewWithHwnd(HWND mHWND)
 {
-	static ParticleView* s_pEglView = NULL;
+	static CCEGLView_qt* s_pEglView = NULL;
 	if (s_pEglView == NULL)
 	{
-		s_pEglView = new ParticleView();
+		s_pEglView = new CCEGLView_qt();
 		if(!s_pEglView->CreateWithHwnd(mHWND))
 		{
 			delete s_pEglView;

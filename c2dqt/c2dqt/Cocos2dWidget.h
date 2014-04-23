@@ -5,7 +5,7 @@
 #include <AppDelegate.h>  
 #include <QPushButton>  
 #include <QFrame.h>  
-#include "HelloWorldScene.h"  
+#include "MainScene.h"  
 #include <QTimerEvent>  
 #include <QCloseEvent> 
 
@@ -17,7 +17,7 @@ public:
     Cocos2dWidget(QWidget*parent= 0,const char * name = 0);  
     ~Cocos2dWidget();  
 
-   void initCocos2d(); //这里用于cocos2d的初始化  
+   void initCocos2d();  
 
    void closeEvent(QCloseEvent *event);
    virtual void paintEvent(QPaintEvent *evt);  
@@ -28,23 +28,13 @@ public:
    virtual void mouseMoveEvent(QMouseEvent *);
    virtual void mouseDoubleClickEvent(QMouseEvent *);
 
-public slots:  
-    void translate();  
-    void particleDemo();  
-    void effectDemo();  
-
-    //void resizeEvent(QResizeEvent* evt);//窗口可能缩放  
-private:  
-  
-    void updateDraw();  //用一个定时器调用，实现刷新  
+private:   
+    void updateDraw(); 
     CCEGLView * eglView;  
     CCDirector *pDirector ;  
     CCScene * pScene;  
     int cocosTimerId;  
-    HelloWorld * layer;  
+    MainScene * layer;  
     CCParticleSun * m_emitter;  
-    CCActionInterval *pEffect;  
- 
-  
-  
+    CCActionInterval *pEffect;   
 };  

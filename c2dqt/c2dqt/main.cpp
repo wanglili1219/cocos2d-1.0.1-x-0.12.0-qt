@@ -39,6 +39,13 @@ int main(int argc, char *argv[])
     ui->listWidget->setMinimumHeight(iconsize.height());
 	QObject::connect(ui->listWidget, SIGNAL(currentRowChanged(int)), pCocosWidget, SLOT(curveChanged(int)));
 
+	  QPixmap pix(iconsize);
+       pix.load("mouse.png");
+	QListWidgetItem *item = new QListWidgetItem;
+	 item->setText("common");
+	  item->setIcon(pix);
+     ui->listWidget->addItem(item);
+
     for (int i = 1; i < 6; ++i){
         QListWidgetItem *item = new QListWidgetItem;
     

@@ -44,23 +44,7 @@ bool MainScene::init()
 		return false;
 	}
 
-	/////////////////////////////
-	// 2. add a menu item with "X" image, which is clicked to quit the program
-	//    you may modify it.
-
-	// add a "close" icon to exit the progress. it's an autorelease object
-	CCMenuItemImage *pCloseItem = CCMenuItemImage::itemFromNormalImage(
-										"CloseNormal.png",
-										"CloseSelected.png",
-										this,
-										menu_selector(MainScene::menuCloseCallback) );
-	pCloseItem->setPosition( ccp(CCDirector::sharedDirector()->getWinSize().width - 20, 20) );
-
-	// create menu, it's an autorelease object
-	CCMenu* pMenu = CCMenu::menuWithItems(pCloseItem, NULL);
-	pMenu->setPosition( CCPointZero );
-	this->addChild(pMenu, 1);
-
+	
 	/////////////////////////////
 	// 3. add your codes below...
 	CCSize size = CCDirector::sharedDirector()->getWinSize();
@@ -95,8 +79,9 @@ void MainScene::menuCloseCallback(CCObject* pSender)
 
 bool MainScene::ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent)
 {
-    CCPoint srppos = pTouch->locationInView(0);
-    m_touchSpr = querySpriteInMap(srppos);
+    CCPoint pos = pTouch->locationInView(0);
+    pos = coorScreen2coorRender(pos);
+    m_touchSpr = querySpriteInMap(pos);
     if (!m_touchSpr && m_curSelectedMapType > 0){
 		char buf[128] = {0};
 		sprintf(buf, "map%d.png", m_curSelectedMapType);
@@ -104,9 +89,7 @@ bool MainScene::ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent)
         if (newmap == NULL){
             return false;
         }
-
-        CCPoint pos = pTouch->locationInView(0);
-        pos = coorScreen2coorRender(pos);
+ 
         newmap->setPosition(pos);
         this->addChild(newmap);
         m_spriteInMap.push_back(newmap);
@@ -193,8 +176,8 @@ CCSprite* MainScene::querySpriteInMap(CCPoint scrpos)
                        , pos.y - (arcpos.y * sprsize.height)
                        , sprsize.width
                        , sprsize.height);
-        CCPoint glpos = CCDirector::sharedDirector()->convertToGL(scrpos);
-        bool iscontain = CCRect::CCRectContainsPoint(sprrect, glpos);
+      
+        bool iscontain = CCRect::CCRectContainsPoint(sprrect, scrpos);
         if (iscontain){
             return spr;
         }

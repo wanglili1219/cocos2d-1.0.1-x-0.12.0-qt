@@ -22,8 +22,9 @@ public:
 	static cocos2d::CCScene* scene();
 
 	void setSelMapType(int listRow);
-    virtual void registerWithTouchDispatcher(void);
 
+    virtual void registerWithTouchDispatcher(void);
+    virtual void draw(void);
 	virtual bool ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent);
     virtual void ccTouchMoved(CCTouch *pTouch, CCEvent *pEvent);
     virtual void ccTouchEnded(CCTouch *pTouch, CCEvent *pEvent);
@@ -40,6 +41,7 @@ public:
 private:
     CCPoint coorScreen2coorRender(CCPoint pos);
     CCSprite* querySpriteInMap(CCPoint scrpos);
+    void drawMap();
 
 private:
 	int m_curSelectedMapType;

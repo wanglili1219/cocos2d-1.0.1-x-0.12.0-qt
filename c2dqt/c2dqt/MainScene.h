@@ -42,6 +42,7 @@ private:
     CCPoint coorScreen2coorRender(CCPoint pos);
     CCSprite* querySpriteInMap(CCPoint scrpos);
     void drawMap();
+    void addDiamond2Map(CCPoint centerPos, int mapSize = 1);
 
 private:
 	int m_curSelectedMapType;

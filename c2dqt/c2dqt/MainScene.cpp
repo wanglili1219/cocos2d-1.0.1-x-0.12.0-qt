@@ -2,10 +2,10 @@
 #include "GLES/gl.h"
 #include "CCAffineTransform.h"
 
-
 #include<math.h>
 float pi = 3.1415926;
 float raid_30 = pi / 6;
+
 
 struct CPoint{
 	CPoint::CPoint(int _x, int _y):x(_x), y(_y){}
@@ -13,12 +13,13 @@ struct CPoint{
 	int x, y;
 
 };
-int m_iGridWidth = 60;
-int m_iGridHeigh = 30;
-int m_yTile = 1024;
-int m_xTile = 1024;
-int m_screenHeight = 320;
-int m_screenWidth = 480;
+
+const int m_iGridWidth = 60;
+const int m_iGridHeigh = 30;
+const int m_yTile = 0;
+const int m_xTile = 0;
+const int m_screenHeight = 320;
+const int m_screenWidth = 480;
 struct  TileData  
 {  
     CCPoint tile;  
@@ -27,6 +28,7 @@ struct  TileData
     TileData() : flag(0) {}  
 };
 
+bool g_mapBit[m_screenWidth / m_iGridWidth][m_screenHeight / m_screenHeight] = { 0 };
 
 //参数： 
 // POINT p 指定的某个点
@@ -143,38 +145,6 @@ BOOL myGetCursorDiamond(CPoint& pt, CPoint& pCenter)
 	return FALSE;
 }
 
-BOOL GetRealDiamond(CPoint& lbpos, CPoint& mousePos, CPoint& pCenter)
-{
-	RECT Rect;
-	Rect.left = lbpos.x;
-    Rect.top = lbpos.y + m_iGridHeigh;
-	Rect.right = lbpos.x + m_iGridWidth;
-	Rect.bottom = lbpos.y;
-
-	if((Rect.left / m_iGridWidth % 2) == (Rect.top / m_iGridHeigh % 2))
-	{
-		pCenter.x = Rect.left, pCenter.y = Rect.top;
-		if(IsPtInDiamond(mousePos, Rect.left, Rect.top) == TRUE) return TRUE;
-	}
-	if((Rect.right / m_iGridWidth % 2) == (Rect.top / m_iGridHeigh % 2))
-	{
-		pCenter.x = Rect.right, pCenter.y = Rect.top;
-		if(IsPtInDiamond(mousePos, Rect.right, Rect.top) == TRUE) return TRUE;
-	}
-	if((Rect.left / m_iGridWidth % 2) == (Rect.bottom / m_iGridHeigh % 2))
-	{
-		pCenter.x = Rect.left, pCenter.y = Rect.bottom;
-		if(IsPtInDiamond(mousePos, Rect.left, Rect.bottom) == TRUE) return TRUE;
-	}
-	if((Rect.right / m_iGridWidth % 2) == (Rect.bottom / m_iGridHeigh % 2))
-	{
-		pCenter.x = Rect.right, pCenter.y = Rect.bottom;
-		if(IsPtInDiamond(mousePos, Rect.right, Rect.bottom)==TRUE) return TRUE;
-	}
-	return FALSE;
-}
-
-
 //屏幕坐标转换成游戏坐标 
 static int getGx(float x,  float y) 
 {
@@ -186,6 +156,13 @@ static int getGx(float x,  float y)
      return (int) (0.5f * (y / (m_iGridHeigh >> 1) - x / (m_iGridWidth >> 1))); 
 }
 
+
+CPoint coorMap2coorLogic(CPoint center)
+{
+    int x = (center.x / (m_iGridWidth * 2) + (center.y + m_iGridHeigh) / (m_iGridHeigh*2));   
+    int y = center.x /(m_iGridWidth * 2) - center.y / (m_iGridHeigh*2) + m_yTile;  
+    return CPoint(x, y);
+}
 
 CPoint Space2Tile(CPoint& screen)  
 {  
@@ -271,7 +248,7 @@ void MainScene::registerWithTouchDispatcher(void)
 
 void MainScene::draw(void)
 {
-   // drawMap();
+    drawMap();
 
 }
 
@@ -284,7 +261,7 @@ bool MainScene::ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent)
 {
     CCPoint pos = pTouch->locationInView(0);
     CCPoint mappos = coorScreen2coorRender(pos);
-    //m_touchSpr = querySpriteInMap(pos);
+    m_touchSpr = querySpriteInMap(mappos);
     if (!m_touchSpr && m_curSelectedMapType > 0){
 		char buf[128] = {0};
 		sprintf(buf, "map%d.png", m_curSelectedMapType);
@@ -297,13 +274,11 @@ bool MainScene::ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent)
 		CPoint mypos(mappos.x, mappos.y);
         myGetCursorDiamond(mypos, pCenter);
 
-        int tilex = getGx(pCenter.x, pCenter.y);
-        int tiley = getGy(pCenter.x, pCenter.y);
+        // int tilex = getGx(pCenter.x, pCenter.y);
+        // int tiley = getGy(pCenter.x, pCenter.y);
 
-        float px  = (m_iGridWidth >> 1) * (tiley - tilex);
-        float py = (m_iGridHeigh >> 1) * (tilex + tiley);
-		
-
+        // float px  = (m_iGridWidth >> 1) * (tiley - tilex);
+        // float py = (m_iGridHeigh >> 1) * (tilex + tiley);
        
         //GetRealDiamond(ccp(px, py), pos, pCenter);
 
@@ -317,7 +292,7 @@ bool MainScene::ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent)
 		CCSize s(m_iGridWidth, m_iGridHeigh);
 		newmap->setContentSize(s);
        
-		newmap->setAnchorPoint(ccp(0.5, 0.5));
+		newmap->setAnchorPoint(ccp(0.f, 0.f));
 		newmap->setPosition(ccp(pCenter.x, pCenter.y));
 
         this->addChild(newmap);
@@ -338,7 +313,11 @@ void MainScene::ccTouchMoved(CCTouch *pTouch, CCEvent *pEvent)
 
     if (m_touchSpr){
         CCPoint newpos = coorScreen2coorRender(pos);
-        m_touchSpr->setPosition(newpos);
+		CPoint pCenter;
+		CPoint mypos(newpos.x, newpos.y);
+        myGetCursorDiamond(mypos, pCenter);
+		CCPoint p(pCenter.x, pCenter.y);
+        m_touchSpr->setPosition(p);
         return;
     }
 
@@ -368,13 +347,12 @@ void MainScene::ccTouchMoved(CCTouch *pTouch, CCEvent *pEvent)
     if (spry < - ly){
         spry = - ly;
     }
-
+	
     this->setPosition(ccp(sprx, spry));
 }
 
 void MainScene::ccTouchEnded(CCTouch *pTouch, CCEvent *pEvent)
 {
-	
     if (m_touchSpr){
         m_touchSpr = 0;
     }
@@ -418,16 +396,15 @@ CCSprite* MainScene::querySpriteInMap(CCPoint scrpos)
 void MainScene::setSelMapType(int listRow)
 {
     m_curSelectedMapType = listRow;
+    m_touchSpr = 0;
 }
-
-
 
 void MainScene::drawMap()
 {
-	return;
 	static float an = 1;
     glColor4ub(255, 255, 0, 255);
-    glLineWidth(2);
+    glLineWidth(1);
+	glPointSize(3);
 
     int orgx = 480;
     int orgy = 0;
@@ -435,41 +412,49 @@ void MainScene::drawMap()
 	int mh = 30;
 
     CCAffineTransform lastform = CCAffineTransformMakeIdentity();
-	
     lastform = CCAffineTransformTranslate(lastform, 300, 220);
-
-	 //当paintY为CHIP_H / 2的奇数倍时,paintX需要偏移CHIP_W / 2 
-	//int m_iGridWidth = 60;
- //int m_iGridHeigh = 30;
-
-
-
- static int offset = 0;
- for (int paintY = 0; paintY <= 480 + m_iGridHeigh; paintY += m_iGridHeigh / 2) 
-{
-     for (int paintX = 0; paintX <= 320 + m_iGridWidth; paintX += m_iGridWidth) 
+    static int offset = 0;
+    for (int paintY = 0; paintY <= 320 + m_iGridHeigh; paintY += m_iGridHeigh) 
     {
-         int gx = getGx(paintX + offset, paintY) + 0;
-         int gy = getGy(paintX + offset, paintY) + 0; 
-        
-         
-		   float px  = (m_iGridWidth >> 1) * (gy - gx) + orgx;
-           float py = (m_iGridHeigh >> 1) * (gy + gx) + orgy;
+        for (int paintX = 0; paintX <= 480 + m_iGridWidth; paintX += m_iGridWidth) 
+        {
+            CPoint pCenter;
+            CPoint pos(paintX, paintY);
+            if (myGetCursorDiamond(pos, pCenter)){
+                CPoint p = coorMap2coorLogic(pCenter);
 
-		  CCSprite* item = CCSprite::spriteWithFile("map3.png");
-			CCSize s(m_iGridWidth, m_iGridHeigh);
-			 item->setContentSize(s);
-			//CCPoint glpos = CCDirector::sharedDirector()->convertToGL(ccp(px, py));
+                CCPoint rb = ccp(pCenter.x + m_iGridWidth >> 1, pCenter.y - m_iGridHeigh >> 1);
+                CCPoint lb = ccp(pCenter.x -  m_iGridWidth >> 1, pCenter.y - m_iGridHeigh >> 1);
+                CCPoint lt = ccp(pCenter.x  -  m_iGridWidth >> 1, pCenter.y + m_iGridHeigh >> 1);
+                CCPoint rt = ccp(pCenter.x + m_iGridWidth >> 1, pCenter.y + m_iGridHeigh >> 1);
 
-			item->setPosition(ccp(px, py));
-			this->addChild(item);
-		 
-		
-     } 
-     
-	 offset = offset == 0 ? m_iGridWidth / 2 : 0;
- }
+				ccDrawLine(lb, rb);
+                ccDrawLine(rb, rt);
+                ccDrawLine(rt, lt);
+                ccDrawLine(lt, lb);
 
-	
+				CPoint tilepos = coorMap2coorLogic(CPoint(pCenter.x, pCenter.y));
+				char buf[128] = {0};
+				sprintf(buf, "%d, %d", tilepos.x, tilepos.y);
+                //CCLabelTTF* lable = CCLabelTTF::labelWithString(buf, "Arial", 14);
+				
+                //lable->setPosition(ccp(pCenter.x , pCenter.y ));
+               // this->addChild(lable);
+            }
+        }  
+    }
 }  
-	
+
+void MainScene::addDiamond2Map(CCPoint centerPos, int mapSize)
+{
+	CPoint tilepos = coorMap2coorLogic(CPoint(centerPos.x, centerPos.y));
+    if (mapSize == 1){
+       g_mapBit[tilepos.x][tilepos.y] = true;
+    }else if (mapSize == 2){
+        g_mapBit[tilepos.x][tilepos.y] = true;
+        g_mapBit[tilepos.x][tilepos.y + 1] = true;
+	}else if(mapSize == 4){
+		
+		
+	}
+}

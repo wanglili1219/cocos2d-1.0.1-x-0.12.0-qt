@@ -15,7 +15,7 @@ struct CPoint{
 };
 
 const int m_iGridWidth = 60;
-const int m_iGridHeigh = 60;
+const int m_iGridHeigh = 30;
 const int m_yTile = 0;
 const int m_xTile = 0;
 const int m_screenHeight = 320;
@@ -119,26 +119,39 @@ BOOL myGetCursorDiamond(CPoint& pt, CPoint& pCenter)
 	Rect.right = Rect.left + m_iGridWidth;
 	Rect.top = Rect.bottom + m_iGridHeigh;
 
-	if((Rect.left / m_iGridWidth % 2) == (Rect.top / m_iGridHeigh % 2))
-	{
-		pCenter.x = Rect.left, pCenter.y = Rect.top;
-		if(IsPtInDiamond(pt, Rect.left, Rect.top) == TRUE) return TRUE;
-	}
-	if((Rect.right / m_iGridWidth % 2) == (Rect.top / m_iGridHeigh % 2))
-	{
-		pCenter.x = Rect.right, pCenter.y = Rect.top;
-		if(IsPtInDiamond(pt, Rect.right, Rect.top) == TRUE) return TRUE;
-	}
-	if((Rect.left / m_iGridWidth % 2) == (Rect.bottom / m_iGridHeigh % 2))
-	{
-		pCenter.x = Rect.left, pCenter.y = Rect.bottom;
-		if(IsPtInDiamond(pt, Rect.left, Rect.bottom) == TRUE) return TRUE;
-	}
-	if((Rect.right / m_iGridWidth % 2) == (Rect.bottom / m_iGridHeigh % 2))
-	{
-		pCenter.x = Rect.right, pCenter.y = Rect.bottom;
-		if(IsPtInDiamond(pt, Rect.right, Rect.bottom)==TRUE) return TRUE;
-	}
+	//if((Rect.left / m_iGridWidth % 2) == (Rect.top / m_iGridHeigh % 2))
+	//{
+		
+		if(IsPtInDiamond(pt, Rect.left, Rect.top) == TRUE){
+			pCenter.x = Rect.left, pCenter.y = Rect.top;
+			return TRUE;
+		}
+	//}
+	//if((Rect.right / m_iGridWidth % 2) == (Rect.top / m_iGridHeigh % 2))
+	//{
+		
+		if(IsPtInDiamond(pt, Rect.right, Rect.top) == TRUE){
+			pCenter.x = Rect.right, pCenter.y = Rect.top;
+			return TRUE;
+		}
+	//}
+
+	//if((Rect.left / m_iGridWidth % 2) == (Rect.bottom / m_iGridHeigh % 2))
+	//{
+	
+		if(IsPtInDiamond(pt, Rect.left, Rect.bottom) == TRUE){
+			pCenter.x = Rect.left, pCenter.y = Rect.bottom;
+			return TRUE;
+		}
+	//}
+	//if((Rect.right / m_iGridWidth % 2) == (Rect.bottom / m_iGridHeigh % 2))
+	//{
+		
+		if(IsPtInDiamond(pt, Rect.right, Rect.bottom)==TRUE){
+			pCenter.x = Rect.right, pCenter.y = Rect.bottom;
+			return TRUE;
+		}
+	//}
 
 	pCenter.x = Rect.left + m_iGridWidth * 0.5 ;
 	pCenter.y = Rect.bottom + m_iGridHeigh * 0.5;
@@ -294,7 +307,7 @@ bool MainScene::ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent)
 		CCSize s(m_iGridWidth, m_iGridHeigh);
 		newmap->setContentSize(s);
        
-		newmap->setAnchorPoint(ccp(0.f, 0.f));
+		newmap->setAnchorPoint(ccp(0.5f, 0.5f));
 		newmap->setPosition(ccp(pCenter.x, pCenter.y));
 
         this->addChild(newmap);
@@ -379,6 +392,11 @@ CCSprite* MainScene::querySpriteInMap(CCPoint scrpos)
     for (; iter != m_spriteInMap.end(); ++iter){
         CCSprite* spr = *iter;
         CCPoint pos = spr->getPosition();
+		CPoint csp(scrpos.x, scrpos.y);
+		if (IsPtInDiamond(csp, pos.x, pos.y)){
+			return spr;
+		}
+/*
         CCPoint arcpos = spr->getAnchorPoint();
         CCSize  sprsize = spr->getContentSize();
         CCRect sprrect(pos.x - (arcpos.x * sprsize.width)
@@ -390,6 +408,7 @@ CCSprite* MainScene::querySpriteInMap(CCPoint scrpos)
         if (iscontain){
             return spr;
         }
+		*/
     }
 
     return 0;
@@ -447,19 +466,27 @@ void MainScene::drawMap()
 		aa += 1;
 		int index = paintX / (m_iGridWidth * 0.5);
 		int indey = paintY / (m_iGridHeigh * 0.5);
-		if (aa > 240 && (index % 2 != 0) && (indey % 2 != 0)){
-
-			  int x = getGx(pos.x, pos.y);
-			  int y = getGy(pos.x, pos.y);
-				CPoint tilepos = coorMap2coorLogic(CPoint(pos.x, pos.y));
-				char buf[128] = {0};
-				sprintf(buf, "%d, %d", x, y);
-                CCLabelTTF* lable = CCLabelTTF::labelWithString(buf, "Arial", 14);
+		
+		int my = (int)(paintY /  (m_iGridHeigh * 0.5)) % 2;
+		int mx = (int)(paintX /  (m_iGridWidth * 0.5)) % 2;
+			if (((my != 0 && mx != 0)
+				|| (my == 0 && mx == 0))){
 				
-                lable->setPosition(ccp(pos.x , pos.y ));
-                this->addChild(lable);
-				aa = 0;
-		}
+                    int x = getGx(pos.x, pos.y);
+                    int y = getGy(pos.x, pos.y);
+
+
+                    CPoint tilepos = coorMap2coorLogic(CPoint(pos.x, pos.y));
+                    char buf[128] = {0};
+                    sprintf(buf, "%d, %d", x, y);
+                    CCLabelTTF* lable = CCLabelTTF::labelWithString(buf, "Arial", 14);
+				
+                    lable->setPosition(ccp(pos.x , pos.y ));
+                    this->addChild(lable);
+                    aa = 0;
+                
+			}
+	
             }
         }  
     }

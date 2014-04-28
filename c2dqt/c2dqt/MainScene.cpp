@@ -15,7 +15,7 @@ struct CPoint{
 };
 
 const int m_iGridWidth = 60;
-const int m_iGridHeigh = 30;
+const int m_iGridHeigh = 60;
 const int m_yTile = 0;
 const int m_xTile = 0;
 const int m_screenHeight = 320;
@@ -80,7 +80,7 @@ BOOL IsPtInDiamond(CPoint& pt, int x, int y)
 //获取鼠标点中的那个菱形的中心点
 //pt-------鼠标位置
 //pCenter--返回中心点坐标
-BOOL GetCursorDiamond(CPoint& pt, CPoint& pCenter)
+bool GetCursorDiamond(CPoint& pt, CPoint& pCenter)
 {
 	RECT Rect;
 	Rect.left = pt.x / m_iGridWidth * m_iGridWidth;
@@ -108,7 +108,7 @@ BOOL GetCursorDiamond(CPoint& pt, CPoint& pCenter)
 		pCenter.x = Rect.right, pCenter.y = Rect.bottom;
 		if(IsPtInDiamond(pt, Rect.right, Rect.bottom)==TRUE) return TRUE;
 	}
-	return FALSE;
+	return true;
 }
 
 BOOL myGetCursorDiamond(CPoint& pt, CPoint& pCenter)
@@ -140,9 +140,9 @@ BOOL myGetCursorDiamond(CPoint& pt, CPoint& pCenter)
 		if(IsPtInDiamond(pt, Rect.right, Rect.bottom)==TRUE) return TRUE;
 	}
 
-	pCenter.x = Rect.left +  m_iGridWidth % 2;
-	pCenter.y = Rect.bottom + m_iGridHeigh % 2;
-	return FALSE;
+	pCenter.x = Rect.left + m_iGridWidth * 0.5 ;
+	pCenter.y = Rect.bottom + m_iGridHeigh * 0.5;
+	return true;
 }
 
 //屏幕坐标转换成游戏坐标 
@@ -248,7 +248,9 @@ void MainScene::registerWithTouchDispatcher(void)
 
 void MainScene::draw(void)
 {
-    drawMap();
+	
+		drawMap();
+	
 
 }
 
@@ -414,32 +416,50 @@ void MainScene::drawMap()
     CCAffineTransform lastform = CCAffineTransformMakeIdentity();
     lastform = CCAffineTransformTranslate(lastform, 300, 220);
     static int offset = 0;
-    for (int paintY = 0; paintY <= 320 + m_iGridHeigh; paintY += m_iGridHeigh) 
+    for (int paintY = m_iGridHeigh * 0.5; paintY <= 320 + m_iGridHeigh; paintY += m_iGridHeigh * 0.5) 
     {
-        for (int paintX = 0; paintX <= 480 + m_iGridWidth; paintX += m_iGridWidth) 
+        for (int paintX = m_iGridWidth * 0.5; paintX <= 480 + m_iGridWidth; paintX += m_iGridWidth * 0.5) 
         {
             CPoint pCenter;
             CPoint pos(paintX, paintY);
             if (myGetCursorDiamond(pos, pCenter)){
-                CPoint p = coorMap2coorLogic(pCenter);
+                // CCPoint rb = ccp(pCenter.x + (m_iGridWidth >> 1), pCenter.y -( m_iGridHeigh >> 1));
+                // CCPoint lb = ccp(pCenter.x - ( m_iGridWidth >> 1), pCenter.y - (m_iGridHeigh >> 1));
+                // CCPoint lt = ccp(pCenter.x  - ( m_iGridWidth >> 1), pCenter.y + (m_iGridHeigh >> 1));
+                // CCPoint rt = ccp(pCenter.x + (m_iGridWidth >> 1), pCenter.y + (m_iGridHeigh >> 1));
 
-                CCPoint rb = ccp(pCenter.x + m_iGridWidth >> 1, pCenter.y - m_iGridHeigh >> 1);
-                CCPoint lb = ccp(pCenter.x -  m_iGridWidth >> 1, pCenter.y - m_iGridHeigh >> 1);
-                CCPoint lt = ccp(pCenter.x  -  m_iGridWidth >> 1, pCenter.y + m_iGridHeigh >> 1);
-                CCPoint rt = ccp(pCenter.x + m_iGridWidth >> 1, pCenter.y + m_iGridHeigh >> 1);
+				// ccDrawLine(lb, rb);
+                // ccDrawLine(rb, rt);
+                // ccDrawLine(rt, lt);
+                // ccDrawLine(lt, lb);
+                
+                CCPoint a = ccp(pCenter.x + m_iGridWidth * 0.5, pCenter.y);
+                CCPoint b = ccp(pCenter.x, pCenter.y + m_iGridHeigh * 0.5);
+                CCPoint c = ccp(pCenter.x - m_iGridWidth * 0.5, pCenter.y);
+                CCPoint d = ccp(pCenter.x, pCenter.y -  m_iGridHeigh * 0.5);
 
-				ccDrawLine(lb, rb);
-                ccDrawLine(rb, rt);
-                ccDrawLine(rt, lt);
-                ccDrawLine(lt, lb);
+				ccDrawLine(a, b);
+                ccDrawLine(b, c);
+                ccDrawLine(c, d);
+                ccDrawLine(d, a);
+                
+				static int aa = 0;
+		aa += 1;
+		int index = paintX / (m_iGridWidth * 0.5);
+		int indey = paintY / (m_iGridHeigh * 0.5);
+		if (aa > 240 && (index % 2 != 0) && (indey % 2 != 0)){
 
-				CPoint tilepos = coorMap2coorLogic(CPoint(pCenter.x, pCenter.y));
+			  int x = getGx(pos.x, pos.y);
+			  int y = getGy(pos.x, pos.y);
+				CPoint tilepos = coorMap2coorLogic(CPoint(pos.x, pos.y));
 				char buf[128] = {0};
-				sprintf(buf, "%d, %d", tilepos.x, tilepos.y);
-                //CCLabelTTF* lable = CCLabelTTF::labelWithString(buf, "Arial", 14);
+				sprintf(buf, "%d, %d", x, y);
+                CCLabelTTF* lable = CCLabelTTF::labelWithString(buf, "Arial", 14);
 				
-                //lable->setPosition(ccp(pCenter.x , pCenter.y ));
-               // this->addChild(lable);
+                lable->setPosition(ccp(pos.x , pos.y ));
+                this->addChild(lable);
+				aa = 0;
+		}
             }
         }  
     }

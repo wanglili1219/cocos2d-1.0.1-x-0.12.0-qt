@@ -6,14 +6,6 @@
 float pi = 3.1415926;
 float raid_30 = pi / 6;
 
-
-struct CPoint{
-	CPoint::CPoint(int _x, int _y):x(_x), y(_y){}
-	CPoint(){x = y = 0;};
-	int x, y;
-
-};
-
 const int m_iGridWidth = 60;
 const int m_iGridHeigh = 30;
 const int m_yTile = 0;
@@ -27,6 +19,7 @@ struct  TileData
   
     TileData() : flag(0) {}  
 };
+
 
 bool g_mapBit[m_screenWidth / m_iGridWidth][m_screenHeight / m_screenHeight] = { 0 };
 
@@ -76,6 +69,21 @@ BOOL IsPtInDiamond(CPoint& pt, int x, int y)
 	point4[3].y = y + m_iGridHeigh * 0.5;
 	return PtInPolygon(pt, point4, 4);	
 }
+
+BOOL IsPtIn4Diamond(CPoint& pt, int x, int y)
+{
+	POINT point4[4];
+	point4[0].x = x - m_iGridWidth;
+	point4[0].y = y;
+	point4[1].x = x;
+	point4[1].y = y - m_iGridHeigh;
+	point4[2].x = x + m_iGridWidth;
+	point4[2].y = y;
+	point4[3].x = x;
+	point4[3].y = y + m_iGridHeigh;
+	return PtInPolygon(pt, point4, 4);	
+}
+
 
 //获取鼠标点中的那个菱形的中心点
 //pt-------鼠标位置
@@ -272,6 +280,39 @@ void MainScene::menuCloseCallback(CCObject* pSender)
 	cocos2d::CCDirector::sharedDirector()->end();
 }
 
+void MainScene::addTile2Map(CCSprite* spr, CPoint pcenter, int rpltile)
+{
+    int x = getGx(pcenter.x, pcenter.y);
+    int y = getGy(pcenter.x, pcenter.y);
+
+    if (rpltile == 1){
+        CCSize s(m_iGridWidth, m_iGridHeigh);
+		spr->setContentSize(s);
+		spr->setAnchorPoint(ccp(0.5f, 0.5f));
+		spr->setPosition(ccp(pcenter.x, pcenter.y));
+        g_mapBit[x][y] = false;
+
+    }else if (rpltile == 4){
+        CCPoint cpos(pcenter.x, pcenter.y + m_iGridHeigh * 0.5);
+		CCLOG("%f %f", cpos.x, cpos.y);
+        CCSize s(m_iGridWidth, m_iGridHeigh);
+		spr->setContentSize(s);
+		spr->setAnchorPoint(ccp(0.5f, 0.5f));
+		spr->setPosition(cpos);
+        g_mapBit[x][y] = false;
+        g_mapBit[x + 1][y] = false;
+        g_mapBit[x + 1][y + 1] = false;
+        g_mapBit[x][y + 1] = false;
+    }
+
+	  this->addChild(spr);
+
+      itemInfo io;
+      io.spr = spr;
+      io.tileNum = rpltile;
+      m_spriteInMap.push_back(io);
+}
+
 bool MainScene::ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent)
 {
     CCPoint pos = pTouch->locationInView(0);
@@ -304,14 +345,7 @@ bool MainScene::ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent)
         // float realpy = (m_iGridHeigh >> 1) * (realtilex + realtiley);
          
 		//CCLOG("<%d , %d> %f %f real <%d , %d> %f %f", tilex, tiley, px, py, realtilex, realtiley, realpx, realpy);
-		CCSize s(m_iGridWidth, m_iGridHeigh);
-		newmap->setContentSize(s);
-       
-		newmap->setAnchorPoint(ccp(0.5f, 0.5f));
-		newmap->setPosition(ccp(pCenter.x, pCenter.y));
-
-        this->addChild(newmap);
-        m_spriteInMap.push_back(newmap);
+		addTile2Map(newmap, pCenter, 4);
         m_touchSpr = newmap;
     }
 
@@ -324,7 +358,7 @@ void MainScene::ccTouchMoved(CCTouch *pTouch, CCEvent *pEvent)
         return;
     }
 
-    CCPoint pos = pTouch->locationInView(0);
+    CCPoint pos = pTouch->locationInView(0);c
 
     if (m_touchSpr){
         CCPoint newpos = coorScreen2coorRender(pos);
@@ -388,15 +422,21 @@ CCPoint MainScene::coorScreen2coorRender(CCPoint pos)
 
 CCSprite* MainScene::querySpriteInMap(CCPoint scrpos)
 {
-	std::vector<CCSprite*>::iterator iter = m_spriteInMap.begin();
+	std::vector<itemInfo>::iterator iter = m_spriteInMap.begin();
     for (; iter != m_spriteInMap.end(); ++iter){
-        CCSprite* spr = *iter;
-        CCPoint pos = spr->getPosition();
+        itemInfo& io = *iter;
+        CCPoint pos = io.spr->getPosition();
 		CPoint csp(scrpos.x, scrpos.y);
-		if (IsPtInDiamond(csp, pos.x, pos.y)){
-			return spr;
-		}
-/*
+        if (io.tileNum == 1){
+            if (IsPtInDiamond(csp, pos.x, pos.y)){
+                return spr;
+            }
+        } else if(io.tileNum == 4){
+            if (IsPtIn4Diamond(csp, pos.x, pos.y)){
+                return spr;
+            }
+        }
+            /*
         CCPoint arcpos = spr->getAnchorPoint();
         CCSize  sprsize = spr->getContentSize();
         CCRect sprrect(pos.x - (arcpos.x * sprsize.width)
@@ -464,7 +504,7 @@ void MainScene::drawMap()
                 
 				static int aa = 0;
 		aa += 1;
-		int index = paintX / (m_iGridWidth * 0.5);
+		int indbex = paintX / (m_iGridWidth * 0.5);
 		int indey = paintY / (m_iGridHeigh * 0.5);
 		
 		int my = (int)(paintY /  (m_iGridHeigh * 0.5)) % 2;
@@ -474,7 +514,6 @@ void MainScene::drawMap()
 				
                     int x = getGx(pos.x, pos.y);
                     int y = getGy(pos.x, pos.y);
-
 
                     CPoint tilepos = coorMap2coorLogic(CPoint(pos.x, pos.y));
                     char buf[128] = {0};
@@ -492,16 +531,3 @@ void MainScene::drawMap()
     }
 }  
 
-void MainScene::addDiamond2Map(CCPoint centerPos, int mapSize)
-{
-	CPoint tilepos = coorMap2coorLogic(CPoint(centerPos.x, centerPos.y));
-    if (mapSize == 1){
-       g_mapBit[tilepos.x][tilepos.y] = true;
-    }else if (mapSize == 2){
-        g_mapBit[tilepos.x][tilepos.y] = true;
-        g_mapBit[tilepos.x][tilepos.y + 1] = true;
-	}else if(mapSize == 4){
-		
-		
-	}
-}

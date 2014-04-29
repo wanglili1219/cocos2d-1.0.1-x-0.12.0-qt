@@ -8,6 +8,26 @@
 
 USING_NS_CC;
 
+struct CPoint{
+	CPoint::CPoint(int _x, int _y):x(_x), y(_y){}
+	CPoint(){x = y = 0;};
+	int x, y;
+
+};
+
+struct itemInfo
+{
+    CCSprite* spr;
+    int tileNum;
+
+    itemInfo()
+        : spr(0)
+        , tileNum(1)
+        {
+
+        }
+};
+
 class MainScene : public cocos2d::CCLayer
 {
 public:
@@ -42,13 +62,13 @@ private:
     CCPoint coorScreen2coorRender(CCPoint pos);
     CCSprite* querySpriteInMap(CCPoint scrpos);
     void drawMap();
-    void addDiamond2Map(CCPoint centerPos, int mapSize = 1);
+	void addTile2Map(CCSprite* spr, CPoint pcenter, int rpltile);
 
 private:
 	int m_curSelectedMapType;
     CCSprite* m_backgroud;
     CCSprite* m_touchSpr;
-    std::vector<CCSprite*> m_spriteInMap;
+    std::vector<itemInfo> m_spriteInMap;
 };
 
 #endif // __HELLOWORLD_SCENE_H__

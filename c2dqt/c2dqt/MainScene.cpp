@@ -358,7 +358,7 @@ void MainScene::ccTouchMoved(CCTouch *pTouch, CCEvent *pEvent)
         return;
     }
 
-    CCPoint pos = pTouch->locationInView(0);c
+    CCPoint pos = pTouch->locationInView(0);
 
     if (m_touchSpr){
         CCPoint newpos = coorScreen2coorRender(pos);
@@ -429,11 +429,11 @@ CCSprite* MainScene::querySpriteInMap(CCPoint scrpos)
 		CPoint csp(scrpos.x, scrpos.y);
         if (io.tileNum == 1){
             if (IsPtInDiamond(csp, pos.x, pos.y)){
-                return spr;
+                return io.spr;
             }
         } else if(io.tileNum == 4){
             if (IsPtIn4Diamond(csp, pos.x, pos.y)){
-                return spr;
+                return io.spr;
             }
         }
             /*
@@ -503,7 +503,6 @@ void MainScene::drawMap()
                 ccDrawLine(d, a);
                 
 				static int aa = 0;
-		aa += 1;
 		int indbex = paintX / (m_iGridWidth * 0.5);
 		int indey = paintY / (m_iGridHeigh * 0.5);
 		
@@ -515,15 +514,13 @@ void MainScene::drawMap()
                     int x = getGx(pos.x, pos.y);
                     int y = getGy(pos.x, pos.y);
 
-                    CPoint tilepos = coorMap2coorLogic(CPoint(pos.x, pos.y));
-                    char buf[128] = {0};
-                    sprintf(buf, "%d, %d", x, y);
-                    CCLabelTTF* lable = CCLabelTTF::labelWithString(buf, "Arial", 14);
+                    // CPoint tilepos = coorMap2coorLogic(CPoint(pos.x, pos.y));
+                    // char buf[128] = {0};
+                    // sprintf(buf, "%d, %d", x, y);
+                    // CCLabelTTF* lable = CCLabelTTF::labelWithString(buf, "Arial", 14);
 				
-                    lable->setPosition(ccp(pos.x , pos.y ));
-                    this->addChild(lable);
-                    aa = 0;
-                
+                    // lable->setPosition(ccp(pos.x , pos.y ));
+                    // this->addChild(lable);
 			}
 	
             }

@@ -2,14 +2,15 @@
 #include <QtGui/QApplication>
 #include <QtGui/QHBoxLayout>
 #include <QtGui/qlistwidget>
-#include <QtGui/QScrollBar>
+#include<QStandardItemModel>                                                                        
+
 #include "cocos2d.h"
 #include "CCEGLView.h"
 #include "AppDelegate.h"
 #include "ui_c2dqt.h"
 
+#include "TileProperyDelegate.h"
 #include "Cocos2dWidget.h"
-
 
 USING_NS_CC;
 
@@ -33,6 +34,20 @@ int main(int argc, char *argv[])
     mainLayout->addWidget(uiParent);
     mainWindow->resize(700, 500);
     mainWindow->setLayout(mainLayout); 
+
+    TileProperyDelegate* delegate = new TileProperyDelegate();
+    ui->tableView->setItemDelegate(delegate);
+
+    QStandardItemModel* mItemModel = new QStandardItemModel(20, 2);
+    QStandardItem *nameit = new QStandardItem("name");  
+    QStandardItem *numit = new QStandardItem("TileNum"); 
+    QStandardItem *blockit = new QStandardItem("Block");  
+    
+    mItemModel->setItem(0, 0, nameit);
+    mItemModel->setItem(1, 0, numit);
+    mItemModel->setItem(2, 0, blockit);
+
+    ui->tableView->setModel(mItemModel);
 
     QSize iconsize(200, 200);
     ui->listWidget->setIconSize(iconsize);

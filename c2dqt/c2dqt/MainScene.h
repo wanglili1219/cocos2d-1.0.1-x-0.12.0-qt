@@ -58,11 +58,17 @@ public:
 	LAYER_NODE_FUNC(MainScene);
 
 
+
 private:
     CCPoint coorScreen2coorRender(CCPoint pos);
     CCSprite* querySpriteInMap(CCPoint scrpos);
     void drawMap();
+    void drawDiamondMap();
 	void addTile2Map(CCSprite* spr, CPoint pcenter, int rpltile);
+    CCPoint convertRenderCoor(int tilex, int tiley);
+    void addTile2DiamondMap(CCSprite* spr, int tilex, int tiley, int pltilenum);
+    bool canAddTile(int tilex, int tiley, int rpltilenum);
+
 
 private:
 	int m_curSelectedMapType;

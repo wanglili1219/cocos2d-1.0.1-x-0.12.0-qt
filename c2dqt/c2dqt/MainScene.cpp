@@ -21,7 +21,12 @@ struct  TileData
 };
 
 
-bool g_mapBit[m_screenWidth / m_iGridWidth][m_screenHeight / m_screenHeight] = { 0 };
+int g_mapBit[m_screenWidth / m_iGridWidth][m_screenHeight / m_iGridHeigh] = { 0 };
+
+void clearMapBit()
+{
+    memset(g_mapBit, 0, sizeof(g_mapBit));
+}
 
 //参数： 
 // POINT p 指定的某个点
@@ -228,7 +233,7 @@ CCScene* MainScene::scene()
 	return scene;
 }
 
-// on "init" you need to initialize your instance
+// on "init" you need to initialize your instancecr
 bool MainScene::init()
 {
 	//////////////////////////////
@@ -238,6 +243,7 @@ bool MainScene::init()
 		return false;
 	}
 
+    clearMapBit();
 	
 	/////////////////////////////
 	// 3. add your codes below...
@@ -270,15 +276,68 @@ void MainScene::registerWithTouchDispatcher(void)
 void MainScene::draw(void)
 {
 	
-		drawMap();
-	
-
+    //drawMap();
+    drawDiamondMap();
 }
 
 void MainScene::menuCloseCallback(CCObject* pSender)
 {
 	cocos2d::CCDirector::sharedDirector()->end();
 }
+
+CCPoint MainScene::convertRenderCoor(int tilex, int tiley)
+{
+    float x =  (tilex - tiley) * m_iGridWidth / 2;
+    float y = (tilex + tiley) * m_iGridHeigh / 2;
+    y = y + m_iGridHeigh * 0.5;
+    y = m_screenHeight - y;
+
+    return ccp(x, y);
+}
+
+bool MainScene::canAddTile(int tilex, int tiley, int rpltilenum)
+{
+    if (rpltilenum == 1){
+        return !g_mapBit[tilex][tiley];
+    }else if (rpltilenum == 4){
+      return (!g_mapBit[tilex][tiley]
+				&& !g_mapBit[tilex - 1][tiley]
+                && !g_mapBit[tilex - 1][tiley - 1]
+                && !g_mapBit[tilex][tiley - 1]);
+
+    }
+
+    return false;
+}
+
+void MainScene::addTile2DiamondMap(CCSprite* spr, int tilex, int tiley, int pltilenum)
+{
+    CCPoint renpos = convertRenderCoor(tilex, tiley);
+    if (pltilenum == 1){
+        CCSize s(m_iGridWidth, m_iGridHeigh);
+		spr->setContentSize(s);
+		spr->setAnchorPoint(ccp(0.5f, 0.5f));
+		spr->setPosition(renpos);
+        g_mapBit[tilex][tiley] = true;
+    }else if (pltilenum == 4){
+        renpos.y += m_iGridHeigh * 0.5;
+        CCSize s(m_iGridWidth, m_iGridHeigh);
+		spr->setContentSize(s);
+		spr->setAnchorPoint(ccp(0.5f, 0.5f));
+		spr->setPosition(renpos);
+        g_mapBit[tilex][tiley] = true;
+        g_mapBit[tilex - 1][tiley] = true;
+        g_mapBit[tilex - 1][tiley - 1] = true;
+        g_mapBit[tilex][tiley - 1] = true;
+    }
+
+    this->addChild(spr);
+    itemInfo io;
+    io.spr = spr;
+    io.tileNum = pltilenum;
+    m_spriteInMap.push_back(io);
+}
+
 
 void MainScene::addTile2Map(CCSprite* spr, CPoint pcenter, int rpltile)
 {
@@ -317,6 +376,10 @@ bool MainScene::ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent)
 {
     CCPoint pos = pTouch->locationInView(0);
     CCPoint mappos = coorScreen2coorRender(pos);
+    int x = getGx(pos.x, pos.y);
+    int y = getGy(pos.x, pos.y);
+    CCLOG("%d %d", x, y);
+    
     m_touchSpr = querySpriteInMap(mappos);
     if (!m_touchSpr && m_curSelectedMapType > 0){
 		char buf[128] = {0};
@@ -325,10 +388,16 @@ bool MainScene::ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent)
         if (newmap == NULL){
             return false;
         }
-     
-		CPoint pCenter;
-		CPoint mypos(mappos.x, mappos.y);
-        myGetCursorDiamond(mypos, pCenter);
+
+        const int rpnum = 4;
+        if (canAddTile(x, y, rpnum)){
+            addTile2DiamondMap(newmap, x, y, rpnum);
+        }
+
+
+		// CPoint pCenter;
+		// CPoint mypos(mappos.x, mappos.y);
+        // myGetCursorDiamond(mypos, pCenter);
 
         // int tilex = getGx(pCenter.x, pCenter.y);
         // int tiley = getGy(pCenter.x, pCenter.y);
@@ -345,7 +414,7 @@ bool MainScene::ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent)
         // float realpy = (m_iGridHeigh >> 1) * (realtilex + realtiley);
          
 		//CCLOG("<%d , %d> %f %f real <%d , %d> %f %f", tilex, tiley, px, py, realtilex, realtiley, realpx, realpy);
-		addTile2Map(newmap, pCenter, 4);
+		//addTile2Map(newmap, pCenter, 4);
         m_touchSpr = newmap;
     }
 
@@ -354,6 +423,7 @@ bool MainScene::ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent)
 
 void MainScene::ccTouchMoved(CCTouch *pTouch, CCEvent *pEvent)
 {
+    return;
     if (!m_backgroud){
         return;
     }
@@ -409,7 +479,7 @@ void MainScene::ccTouchEnded(CCTouch *pTouch, CCEvent *pEvent)
 
 void MainScene::ccTouchCancelled(CCTouch *pTouch, CCEvent *pEvent)
 {
-
+    
 }
 
 CCPoint MainScene::coorScreen2coorRender(CCPoint pos)
@@ -460,6 +530,42 @@ void MainScene::setSelMapType(int listRow)
     m_touchSpr = 0;
 }
 
+void MainScene::drawDiamondMap()
+{
+    static float an = 1;
+    glColor4ub(255, 255, 0, 255);
+    glLineWidth(1);
+	glPointSize(3);
+
+    for (int tile_y = 0; tile_y < 10; ++tile_y){
+        for (int tile_x = 0; tile_x < 10; ++tile_x){
+            float x =  (tile_x - tile_y) * m_iGridWidth / 2;
+            float y = (tile_x + tile_y) * m_iGridHeigh / 2;
+            y = y + m_iGridHeigh * 0.5;
+            y = m_screenHeight - y;
+
+            CCPoint a = ccp(x + m_iGridWidth * 0.5, y);
+            CCPoint b = ccp(x, y + m_iGridHeigh * 0.5);
+            CCPoint c = ccp(x - m_iGridWidth * 0.5, y);
+            CCPoint d = ccp(x, y -  m_iGridHeigh * 0.5);
+
+            ccDrawLine(a, b);
+            ccDrawLine(b, c);
+            ccDrawLine(c, d);
+            ccDrawLine(d, a);
+
+            char buf[128] = {0};
+            sprintf(buf, "%d, %d", tile_x, tile_y);
+            CCLabelTTF* lable = CCLabelTTF::labelWithString(buf, "Arial", 14);
+				
+            lable->setPosition(ccp(x , y));
+            this->addChild(lable);
+
+        }
+    }
+
+}
+
 void MainScene::drawMap()
 {
 	static float an = 1;
@@ -503,13 +609,13 @@ void MainScene::drawMap()
                 ccDrawLine(d, a);
                 
 				static int aa = 0;
-		int indbex = paintX / (m_iGridWidth * 0.5);
-		int indey = paintY / (m_iGridHeigh * 0.5);
+                int indbex = paintX / (m_iGridWidth * 0.5);
+                int indey = paintY / (m_iGridHeigh * 0.5);
 		
-		int my = (int)(paintY /  (m_iGridHeigh * 0.5)) % 2;
-		int mx = (int)(paintX /  (m_iGridWidth * 0.5)) % 2;
-			if (((my != 0 && mx != 0)
-				|| (my == 0 && mx == 0))){
+                int my = (int)(paintY /  (m_iGridHeigh * 0.5)) % 2;
+                int mx = (int)(paintX /  (m_iGridWidth * 0.5)) % 2;
+                if (((my != 0 && mx != 0)
+                     || (my == 0 && mx == 0))){
 				
                     int x = getGx(pos.x, pos.y);
                     int y = getGy(pos.x, pos.y);
@@ -521,7 +627,7 @@ void MainScene::drawMap()
 				
                     // lable->setPosition(ccp(pos.x , pos.y ));
                     // this->addChild(lable);
-			}
+                }
 	
             }
         }  

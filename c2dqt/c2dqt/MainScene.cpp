@@ -381,7 +381,7 @@ void MainScene::checkCanAnchor()
             && color.g == ccRED.g
             && color.b == ccRED.b){
             if (canAddTile(io.tilex, io.tiley, io.tileNum)){
-                io.spr->setColor(ccGREEN);
+                io.spr->setColor(ccWHITE);
                 use4Tile(io.tilex, io.tiley);
             }
         }
@@ -419,34 +419,11 @@ bool MainScene::ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent)
         m_itemInfo = addTile2DiamondMap(newmap, x, y, rpnum);
         assert(m_itemInfo);
         if (canAddTile(x, y, rpnum)){
-            useOneTile(x, y);
             m_itemInfo->spr->setColor(ccGREEN);
         }else{
-            use4Tile(x, y);
             m_itemInfo->spr->setColor(ccRED);
         }
 
-		// CPoint pCenter;
-		// CPoint mypos(mappos.x, mappos.y);
-        // myGetCursorDiamond(mypos, pCenter);
-
-        // int tilex = getGx(pCenter.x, pCenter.y);
-        // int tiley = getGy(pCenter.x, pCenter.y);
-
-        // float px  = (m_iGridWidth >> 1) * (tiley - tilex);
-        // float py = (m_iGridHeigh >> 1) * (tilex + tiley);
-       
-        //GetRealDiamond(ccp(px, py), pos, pCenter);
-
-        // int realtilex = getGx(pCenter.x, pCenter.y);
-        // int realtiley = getGy(pCenter.x, pCenter.y);
-
-        // float realpx  = (m_iGridWidth >> 1) * (realtiley - realtilex);
-        // float realpy = (m_iGridHeigh >> 1) * (realtilex + realtiley);
-         
-		//CCLOG("<%d , %d> %f %f real <%d , %d> %f %f", tilex, tiley, px, py, realtilex, realtiley, realpx, realpy);
-		//addTile2Map(newmap, pCenter, 4);
-        //m_touchSpr = newmap;
     }
 
     return true;
@@ -471,7 +448,9 @@ void MainScene::ccTouchMoved(CCTouch *pTouch, CCEvent *pEvent)
             renpos = convertRenderCoor(tilex, tiley);
             renpos.y += m_iGridHeigh * 0.5;
         }
-
+        
+        //CCLOG("move touch %d %d", tilex, tiley);
+        printTile(tilex, tiley);
         m_itemInfo->spr->setPosition(renpos);
         m_itemInfo->tilex = tilex;
         m_itemInfo->tiley = tiley;
@@ -516,13 +495,19 @@ void MainScene::ccTouchMoved(CCTouch *pTouch, CCEvent *pEvent)
 
 void MainScene::ccTouchEnded(CCTouch *pTouch, CCEvent *pEvent)
 {
-    // if (m_itemInfo){
-    //     if (m_itemInfo->tileNum == 1){
-    //         useOneTile(m_itemInfo->tilex, m_itemInfo->tiley);
-    //     }else if (m_itemInfo->tileNum == 4){
-    //         use4Tile(m_itemInfo->tilex, m_itemInfo->tiley);
-    //     }
-    // }
+    if (m_itemInfo){
+        if (canAddTile(m_itemInfo->tilex, m_itemInfo->tiley, m_itemInfo->tileNum)){
+            if (m_itemInfo->tileNum == 1){
+                useOneTile(m_itemInfo->tilex, m_itemInfo->tiley);
+            }else if (m_itemInfo->tileNum == 4){
+                use4Tile(m_itemInfo->tilex, m_itemInfo->tiley);
+            }
+
+            m_itemInfo->spr->setColor(ccWHITE);
+        }else{
+            m_itemInfo->spr->setColor(ccRED);
+        }
+    }
 
     m_itemInfo = 0;
 }
@@ -607,12 +592,17 @@ void MainScene::drawDiamondMap()
             ccDrawLine(c, d);
             ccDrawLine(d, a);
 
-            // char buf[128] = {0};
-            // sprintf(buf, "%d, %d", tile_x, tile_y);
-            // CCLabelTTF* lable = CCLabelTTF::labelWithString(buf, "Arial", 14);
+			static int aa = 0;
+			aa += 1;
+			if (aa> 120){
+				aa = 0;
+                char buf[128] = {0};
+                sprintf(buf, "%d, %d", tile_x, tile_y);
+                CCLabelTTF* lable = CCLabelTTF::labelWithString(buf, "Arial", 14);
 				
-            // lable->setPosition(renpos);
-            // this->addChild(lable);
+                lable->setPosition(renpos);
+                this->addChild(lable);
+			}
         }
     }
 }
@@ -671,13 +661,13 @@ void MainScene::drawMap()
                     int x = getGx(pos.x, pos.y);
                     int y = getGy(pos.x, pos.y);
 
-                    // CPoint tilepos = coorMap2coorLogic(CPoint(pos.x, pos.y));
-                    // char buf[128] = {0};
-                    // sprintf(buf, "%d, %d", x, y);
-                    // CCLabelTTF* lable = CCLabelTTF::labelWithString(buf, "Arial", 14);
+                    CPoint tilepos = coorMap2coorLogic(CPoint(pos.x, pos.y));
+                    char buf[128] = {0};
+                    sprintf(buf, "%d, %d", x, y);
+                    CCLabelTTF* lable = CCLabelTTF::labelWithString(buf, "Arial", 14);
 				
-                    // lable->setPosition(ccp(pos.x , pos.y ));
-                    // this->addChild(lable);
+                    lable->setPosition(ccp(pos.x , pos.y ));
+                    this->addChild(lable);
                 }
 	
             }
@@ -710,4 +700,12 @@ void MainScene::unuse4Tile(int tilex, int tiley)
     g_mapBit[tilex + 1][tiley] = false;
     g_mapBit[tilex + 1][tiley + 1] = false;
     g_mapBit[tilex][tiley + 1] = false;
+}
+
+void MainScene::printTile(int tilex, int tiley)
+{
+    CCLOG("x %d y %d %d", tilex, tiley,  g_mapBit[tilex][tiley]); 
+    CCLOG("x %d y %d %d", tilex + 1, tiley,  g_mapBit[tilex + 1][tiley]); 
+    CCLOG("x %d y %d %d", tilex + 1, tiley + 1,  g_mapBit[tilex + 1][tiley + 1]); 
+    CCLOG("x %d y %d %d", tilex, tiley + 1,  g_mapBit[tilex][tiley + 1]); 
 }

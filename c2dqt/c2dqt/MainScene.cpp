@@ -276,9 +276,8 @@ void MainScene::registerWithTouchDispatcher(void)
 
 void MainScene::draw(void)
 {
-	
-    //drawMap();
     drawDiamondMap();
+    checkCanAnchor();
 }
 
 void MainScene::menuCloseCallback(CCObject* pSender)
@@ -370,6 +369,18 @@ void MainScene::addTile2Map(CCSprite* spr, CPoint pcenter, int rpltile)
     //   io.spr = spr;
     //   io.tileNum = rpltile;
     //   m_spriteInMap.push_back(io);
+}
+
+void MainScene::checkCanAnchor()
+{
+    std::vector<itemInfo>::iterator iter = m_spriteInMap.begin();
+    for (; iter != m_spriteInMap.end(); ++iter){
+        itemInfo& io = *iter;
+        if (canAddTile(io.tilex, io.tiley, io.tileNum)){
+            io.spr->setColor(ccGREEN);
+            use4Tile(io.tilex, io.tiley);
+        }
+    }
 }
 
 bool MainScene::ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent)
@@ -500,13 +511,13 @@ void MainScene::ccTouchMoved(CCTouch *pTouch, CCEvent *pEvent)
 
 void MainScene::ccTouchEnded(CCTouch *pTouch, CCEvent *pEvent)
 {
-    if (m_itemInfo){
-        if (m_itemInfo->tileNum == 1){
-            useOneTile(m_itemInfo->tilex, m_itemInfo->tiley);
-        }else if (m_itemInfo->tileNum == 4){
-            use4Tile(m_itemInfo->tilex, m_itemInfo->tiley);
-        }
-    }
+    // if (m_itemInfo){
+    //     if (m_itemInfo->tileNum == 1){
+    //         useOneTile(m_itemInfo->tilex, m_itemInfo->tiley);
+    //     }else if (m_itemInfo->tileNum == 4){
+    //         use4Tile(m_itemInfo->tilex, m_itemInfo->tiley);
+    //     }
+    // }
 
     m_itemInfo = 0;
 }

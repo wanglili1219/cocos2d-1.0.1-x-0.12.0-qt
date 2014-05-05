@@ -76,7 +76,7 @@ private:
     void use4Tile(int tilex, int tiley);
     void unuseOneTile(int tilex, int tiley);
     void unuse4Tile(int tilex, int tiley);
-    void checkCanHold();
+    void checkCanAnchor();
 
 private:
 	int m_curSelectedMapType;

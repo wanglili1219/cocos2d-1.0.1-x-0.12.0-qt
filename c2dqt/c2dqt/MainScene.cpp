@@ -376,9 +376,14 @@ void MainScene::checkCanAnchor()
     std::vector<itemInfo>::iterator iter = m_spriteInMap.begin();
     for (; iter != m_spriteInMap.end(); ++iter){
         itemInfo& io = *iter;
-        if (canAddTile(io.tilex, io.tiley, io.tileNum)){
-            io.spr->setColor(ccGREEN);
-            use4Tile(io.tilex, io.tiley);
+        const ccColor3B& color = io.spr->getColor();
+        if (color.r == ccRED.r 
+            && color.g == ccRED.g
+            && color.b == ccRED.b){
+            if (canAddTile(io.tilex, io.tiley, io.tileNum)){
+                io.spr->setColor(ccGREEN);
+                use4Tile(io.tilex, io.tiley);
+            }
         }
     }
 }

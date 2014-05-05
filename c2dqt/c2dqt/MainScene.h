@@ -17,15 +17,19 @@ struct CPoint{
 
 struct itemInfo
 {
-    CCSprite* spr;
-    int tileNum;
+     CCSprite* spr;
+     int tileNum;
+     int tilex;
+     int tiley;
 
-    itemInfo()
-        : spr(0)
-        , tileNum(1)
-        {
+itemInfo()
+: spr(0)
+, tileNum(1)
+          , tilex(-1)
+          , tiley(-1)
+          {
 
-        }
+          }
 };
 
 class MainScene : public cocos2d::CCLayer
@@ -61,19 +65,24 @@ public:
 
 private:
     CCPoint coorScreen2coorRender(CCPoint pos);
-    CCSprite* querySpriteInMap(CCPoint scrpos);
+    itemInfo* querySpriteInMap(CCPoint scrpos);
     void drawMap();
     void drawDiamondMap();
 	void addTile2Map(CCSprite* spr, CPoint pcenter, int rpltile);
     CCPoint convertRenderCoor(int tilex, int tiley);
-    void addTile2DiamondMap(CCSprite* spr, int tilex, int tiley, int pltilenum);
+    itemInfo* addTile2DiamondMap(CCSprite* spr, int tilex, int tiley, int pltilenum);
     bool canAddTile(int tilex, int tiley, int rpltilenum);
-
+    void useOneTile(int tilex, int tiley);
+    void use4Tile(int tilex, int tiley);
+    void unuseOneTile(int tilex, int tiley);
+    void unuse4Tile(int tilex, int tiley);
+    void checkCanHold();
 
 private:
 	int m_curSelectedMapType;
     CCSprite* m_backgroud;
     CCSprite* m_touchSpr;
+    itemInfo* m_itemInfo;
     std::vector<itemInfo> m_spriteInMap;
 };
 

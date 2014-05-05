@@ -207,6 +207,7 @@ MainScene::MainScene()
     : m_backgroud(0)
     , m_touchSpr(0)
     , m_curSelectedMapType(-1)
+    , m_itemInfo(0)
 {
 
 }
@@ -290,7 +291,6 @@ CCPoint MainScene::convertRenderCoor(int tilex, int tiley)
     float x =  (tilex - tiley) * m_iGridWidth / 2;
     float y = (tilex + tiley) * m_iGridHeigh / 2;
     y = y + m_iGridHeigh * 0.5;
-    y = m_screenHeight - y;
 
     return ccp(x, y);
 }
@@ -301,16 +301,16 @@ bool MainScene::canAddTile(int tilex, int tiley, int rpltilenum)
         return !g_mapBit[tilex][tiley];
     }else if (rpltilenum == 4){
       return (!g_mapBit[tilex][tiley]
-				&& !g_mapBit[tilex - 1][tiley]
-                && !g_mapBit[tilex - 1][tiley - 1]
-                && !g_mapBit[tilex][tiley - 1]);
+				&& !g_mapBit[tilex + 1][tiley]
+                && !g_mapBit[tilex + 1][tiley + 1]
+                && !g_mapBit[tilex][tiley + 1]);
 
     }
 
     return false;
 }
 
-void MainScene::addTile2DiamondMap(CCSprite* spr, int tilex, int tiley, int pltilenum)
+itemInfo* MainScene::addTile2DiamondMap(CCSprite* spr, int tilex, int tiley, int pltilenum)
 {
     CCPoint renpos = convertRenderCoor(tilex, tiley);
     if (pltilenum == 1){
@@ -318,70 +318,80 @@ void MainScene::addTile2DiamondMap(CCSprite* spr, int tilex, int tiley, int plti
 		spr->setContentSize(s);
 		spr->setAnchorPoint(ccp(0.5f, 0.5f));
 		spr->setPosition(renpos);
-        g_mapBit[tilex][tiley] = true;
+
     }else if (pltilenum == 4){
         renpos.y += m_iGridHeigh * 0.5;
         CCSize s(m_iGridWidth, m_iGridHeigh);
 		spr->setContentSize(s);
 		spr->setAnchorPoint(ccp(0.5f, 0.5f));
 		spr->setPosition(renpos);
-        g_mapBit[tilex][tiley] = true;
-        g_mapBit[tilex - 1][tiley] = true;
-        g_mapBit[tilex - 1][tiley - 1] = true;
-        g_mapBit[tilex][tiley - 1] = true;
     }
 
     this->addChild(spr);
     itemInfo io;
     io.spr = spr;
     io.tileNum = pltilenum;
+    io.tilex = tilex;
+    io.tiley = tiley;
     m_spriteInMap.push_back(io);
+    
+    return &m_spriteInMap.back();
 }
 
 
 void MainScene::addTile2Map(CCSprite* spr, CPoint pcenter, int rpltile)
 {
-    int x = getGx(pcenter.x, pcenter.y);
-    int y = getGy(pcenter.x, pcenter.y);
+    // int x = getGx(pcenter.x, pcenter.y);
+    // int y = getGy(pcenter.x, pcenter.y);
 
-    if (rpltile == 1){
-        CCSize s(m_iGridWidth, m_iGridHeigh);
-		spr->setContentSize(s);
-		spr->setAnchorPoint(ccp(0.5f, 0.5f));
-		spr->setPosition(ccp(pcenter.x, pcenter.y));
-        g_mapBit[x][y] = false;
+    // if (rpltile == 1){
+    //     CCSize s(m_iGridWidth, m_iGridHeigh);
+	// 	spr->setContentSize(s);
+	// 	spr->setAnchorPoint(ccp(0.5f, 0.5f));
+	// 	spr->setPosition(ccp(pcenter.x, pcenter.y));
+    //     g_mapBit[x][y] = false;
 
-    }else if (rpltile == 4){
-        CCPoint cpos(pcenter.x, pcenter.y + m_iGridHeigh * 0.5);
-		CCLOG("%f %f", cpos.x, cpos.y);
-        CCSize s(m_iGridWidth, m_iGridHeigh);
-		spr->setContentSize(s);
-		spr->setAnchorPoint(ccp(0.5f, 0.5f));
-		spr->setPosition(cpos);
-        g_mapBit[x][y] = false;
-        g_mapBit[x + 1][y] = false;
-        g_mapBit[x + 1][y + 1] = false;
-        g_mapBit[x][y + 1] = false;
-    }
+    // }else if (rpltile == 4){
+    //     CCPoint cpos(pcenter.x, pcenter.y + m_iGridHeigh * 0.5);
+	// 	CCLOG("%f %f", cpos.x, cpos.y);
+    //     CCSize s(m_iGridWidth, m_iGridHeigh);
+	// 	spr->setContentSize(s);
+	// 	spr->setAnchorPoint(ccp(0.5f, 0.5f));
+	// 	spr->setPosition(cpos);
+    //     g_mapBit[x][y] = false;
+    //     g_mapBit[x + 1][y] = false;
+    //     g_mapBit[x + 1][y + 1] = false;
+    //     g_mapBit[x][y + 1] = false;
+    // }
 
-	  this->addChild(spr);
+	//   this->addChild(spr);
 
-      itemInfo io;
-      io.spr = spr;
-      io.tileNum = rpltile;
-      m_spriteInMap.push_back(io);
+    //   itemInfo io;
+    //   io.spr = spr;
+    //   io.tileNum = rpltile;
+    //   m_spriteInMap.push_back(io);
 }
 
 bool MainScene::ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent)
 {
     CCPoint pos = pTouch->locationInView(0);
     CCPoint mappos = coorScreen2coorRender(pos);
-    int x = getGx(pos.x, pos.y);
-    int y = getGy(pos.x, pos.y);
+    int x = getGx(mappos.x, mappos.y);
+    int y = getGy(mappos.x, mappos.y);
     CCLOG("%d %d", x, y);
     
-    m_touchSpr = querySpriteInMap(mappos);
-    if (!m_touchSpr && m_curSelectedMapType > 0){
+    m_itemInfo = querySpriteInMap(mappos);
+    if (m_itemInfo){
+        if (m_itemInfo->tileNum == 1){
+            unuseOneTile(m_itemInfo->tilex, m_itemInfo->tiley);
+        }else if (m_itemInfo->tileNum == 4){
+            unuse4Tile(m_itemInfo->tilex, m_itemInfo->tiley);
+        }
+
+        m_itemInfo->spr->setColor(ccGREEN);
+    }
+
+    if (!m_itemInfo && m_curSelectedMapType > 0){
 		char buf[128] = {0};
 		sprintf(buf, "map%d.png", m_curSelectedMapType);
 	    CCSprite* newmap =  CCSprite::spriteWithFile(buf);
@@ -390,10 +400,15 @@ bool MainScene::ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent)
         }
 
         const int rpnum = 4;
+        m_itemInfo = addTile2DiamondMap(newmap, x, y, rpnum);
+        assert(m_itemInfo);
         if (canAddTile(x, y, rpnum)){
-            addTile2DiamondMap(newmap, x, y, rpnum);
+            useOneTile(x, y);
+            m_itemInfo->spr->setColor(ccGREEN);
+        }else{
+            use4Tile(x, y);
+            m_itemInfo->spr->setColor(ccRED);
         }
-
 
 		// CPoint pCenter;
 		// CPoint mypos(mappos.x, mappos.y);
@@ -415,7 +430,7 @@ bool MainScene::ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent)
          
 		//CCLOG("<%d , %d> %f %f real <%d , %d> %f %f", tilex, tiley, px, py, realtilex, realtiley, realpx, realpy);
 		//addTile2Map(newmap, pCenter, 4);
-        m_touchSpr = newmap;
+        //m_touchSpr = newmap;
     }
 
     return true;
@@ -423,20 +438,33 @@ bool MainScene::ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent)
 
 void MainScene::ccTouchMoved(CCTouch *pTouch, CCEvent *pEvent)
 {
-    return;
     if (!m_backgroud){
         return;
     }
 
     CCPoint pos = pTouch->locationInView(0);
+    if (m_itemInfo){
+        CCPoint mappos = coorScreen2coorRender(pos);
+        int tilex = getGx(mappos.x, mappos.y);
+        int tiley = getGy(mappos.x, mappos.y);
+        const int pltilenum = 4;
+		CCPoint renpos;
+        if (pltilenum == 1){
+            renpos = convertRenderCoor(tilex, tiley);
+        }else if (pltilenum == 4){
+            renpos = convertRenderCoor(tilex, tiley);
+            renpos.y += m_iGridHeigh * 0.5;
+        }
 
-    if (m_touchSpr){
-        CCPoint newpos = coorScreen2coorRender(pos);
-		CPoint pCenter;
-		CPoint mypos(newpos.x, newpos.y);
-        myGetCursorDiamond(mypos, pCenter);
-		CCPoint p(pCenter.x, pCenter.y);
-        m_touchSpr->setPosition(p);
+        m_itemInfo->spr->setPosition(renpos);
+        m_itemInfo->tilex = tilex;
+        m_itemInfo->tiley = tiley;
+        if (canAddTile(m_itemInfo->tilex, m_itemInfo->tiley, m_itemInfo->tileNum)){
+            m_itemInfo->spr->setColor(ccGREEN);
+        }else{
+            m_itemInfo->spr->setColor(ccRED);
+        }
+
         return;
     }
 
@@ -472,9 +500,15 @@ void MainScene::ccTouchMoved(CCTouch *pTouch, CCEvent *pEvent)
 
 void MainScene::ccTouchEnded(CCTouch *pTouch, CCEvent *pEvent)
 {
-    if (m_touchSpr){
-        m_touchSpr = 0;
+    if (m_itemInfo){
+        if (m_itemInfo->tileNum == 1){
+            useOneTile(m_itemInfo->tilex, m_itemInfo->tiley);
+        }else if (m_itemInfo->tileNum == 4){
+            use4Tile(m_itemInfo->tilex, m_itemInfo->tiley);
+        }
     }
+
+    m_itemInfo = 0;
 }
 
 void MainScene::ccTouchCancelled(CCTouch *pTouch, CCEvent *pEvent)
@@ -490,7 +524,7 @@ CCPoint MainScene::coorScreen2coorRender(CCPoint pos)
     return newscpos;
 }
 
-CCSprite* MainScene::querySpriteInMap(CCPoint scrpos)
+itemInfo* MainScene::querySpriteInMap(CCPoint scrpos)
 {
 	std::vector<itemInfo>::iterator iter = m_spriteInMap.begin();
     for (; iter != m_spriteInMap.end(); ++iter){
@@ -499,11 +533,11 @@ CCSprite* MainScene::querySpriteInMap(CCPoint scrpos)
 		CPoint csp(scrpos.x, scrpos.y);
         if (io.tileNum == 1){
             if (IsPtInDiamond(csp, pos.x, pos.y)){
-                return io.spr;
+                return &io;
             }
         } else if(io.tileNum == 4){
             if (IsPtIn4Diamond(csp, pos.x, pos.y)){
-                return io.spr;
+                return &io;
             }
         }
             /*
@@ -530,6 +564,7 @@ void MainScene::setSelMapType(int listRow)
     m_touchSpr = 0;
 }
 
+//tile pos -> screen pos -> render pos
 void MainScene::drawDiamondMap()
 {
     static float an = 1;
@@ -542,28 +577,28 @@ void MainScene::drawDiamondMap()
             float x =  (tile_x - tile_y) * m_iGridWidth / 2;
             float y = (tile_x + tile_y) * m_iGridHeigh / 2;
             y = y + m_iGridHeigh * 0.5;
-            y = m_screenHeight - y;
 
-            CCPoint a = ccp(x + m_iGridWidth * 0.5, y);
-            CCPoint b = ccp(x, y + m_iGridHeigh * 0.5);
-            CCPoint c = ccp(x - m_iGridWidth * 0.5, y);
-            CCPoint d = ccp(x, y -  m_iGridHeigh * 0.5);
+            //x y is within coordinate of Screen, but not call coorScreen2coorRender, as this method be called within coordinate of MapSprite.
+            CCPoint renpos = ccp(x, y);//coorScreen2coorRender(ccp(x, y));
+
+            CCPoint a = ccp(renpos.x + m_iGridWidth * 0.5, renpos.y);
+            CCPoint b = ccp(renpos.x, renpos.y + m_iGridHeigh * 0.5);
+            CCPoint c = ccp(renpos.x - m_iGridWidth * 0.5, renpos.y);
+            CCPoint d = ccp(renpos.x, renpos.y -  m_iGridHeigh * 0.5);
 
             ccDrawLine(a, b);
             ccDrawLine(b, c);
             ccDrawLine(c, d);
             ccDrawLine(d, a);
 
-            char buf[128] = {0};
-            sprintf(buf, "%d, %d", tile_x, tile_y);
-            CCLabelTTF* lable = CCLabelTTF::labelWithString(buf, "Arial", 14);
+            // char buf[128] = {0};
+            // sprintf(buf, "%d, %d", tile_x, tile_y);
+            // CCLabelTTF* lable = CCLabelTTF::labelWithString(buf, "Arial", 14);
 				
-            lable->setPosition(ccp(x , y));
-            this->addChild(lable);
-
+            // lable->setPosition(renpos);
+            // this->addChild(lable);
         }
     }
-
 }
 
 void MainScene::drawMap()
@@ -634,3 +669,29 @@ void MainScene::drawMap()
     }
 }  
 
+
+void MainScene::useOneTile(int tilex, int tiley)
+{
+    g_mapBit[tilex][tiley] = true;
+}
+
+void MainScene::use4Tile(int tilex, int tiley)
+{
+    g_mapBit[tilex][tiley] = true;
+    g_mapBit[tilex + 1][tiley] = true;
+    g_mapBit[tilex + 1][tiley + 1] = true;
+    g_mapBit[tilex][tiley + 1] = true;
+}
+
+void MainScene::unuseOneTile(int tilex, int tiley)
+{
+    g_mapBit[tilex][tiley] = false;
+}
+
+void MainScene::unuse4Tile(int tilex, int tiley)
+{
+    g_mapBit[tilex][tiley] = false;
+    g_mapBit[tilex + 1][tiley] = false;
+    g_mapBit[tilex + 1][tiley + 1] = false;
+    g_mapBit[tilex][tiley + 1] = false;
+}

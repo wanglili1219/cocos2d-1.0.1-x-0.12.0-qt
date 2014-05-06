@@ -3,8 +3,12 @@
 #include "CCAffineTransform.h"
 
 #include<math.h>
+
+#define IS_POWER_2(X) (((X) & ((X) - 1)) == 0)
+
 float pi = 3.1415926;
 float raid_30 = pi / 6;
+
 
 const int m_iGridWidth = 60;
 const int m_iGridHeigh = 30;
@@ -294,19 +298,21 @@ CCPoint MainScene::convertRenderCoor(int tilex, int tiley)
     return ccp(x, y);
 }
 
-bool MainScene::canAddTile(int tilex, int tiley, int rpltilenum)
+bool MainScene::canAddTile(int tilex, int tiley, int num)
 {
-    if (rpltilenum == 1){
-        return !g_mapBit[tilex][tiley];
-    }else if (rpltilenum == 4){
-      return (!g_mapBit[tilex][tiley]
-				&& !g_mapBit[tilex + 1][tiley]
-                && !g_mapBit[tilex + 1][tiley + 1]
-                && !g_mapBit[tilex][tiley + 1]);
-
+    if (!IS_POWER_2(num)){
+        return false;
     }
 
-    return false;
+    int retain = 0;
+    int desnum = sqrt((float)num);
+    for (int dx = 0; dx < desnum; ++dx){
+        for (int dy = 0; dy < desnum; ++dy){
+            retain |= g_mapBit[tilex + dx][tiley + dy];
+        }
+    }
+
+    return !(retain == 1);
 }
 
 itemInfo* MainScene::addTile2DiamondMap(CCSprite* spr, int tilex, int tiley, int pltilenum)
@@ -382,10 +388,17 @@ void MainScene::checkCanAnchor()
             && color.b == ccRED.b){
             if (canAddTile(io.tilex, io.tiley, io.tileNum)){
                 io.spr->setColor(ccWHITE);
-                use4Tile(io.tilex, io.tiley);
+                retainTile(io.tilex, io.tiley, io.tileNum);
             }
         }
     }
+}
+
+bool MainScene::onClickMouseKey(int x, int y)
+{
+    CCPoint mappos = coorScreen2coorRender(ccp(x, y));
+    m_itemInfo = querySpriteInMap(mappos);
+    return m_itemInfo == 0 ? false : true;
 }
 
 bool MainScene::ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent)
@@ -398,12 +411,7 @@ bool MainScene::ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent)
     
     m_itemInfo = querySpriteInMap(mappos);
     if (m_itemInfo){
-        if (m_itemInfo->tileNum == 1){
-            unuseOneTile(m_itemInfo->tilex, m_itemInfo->tiley);
-        }else if (m_itemInfo->tileNum == 4){
-            unuse4Tile(m_itemInfo->tilex, m_itemInfo->tiley);
-        }
-
+        releaseTile(m_itemInfo->tilex, m_itemInfo->tiley, m_itemInfo->tileNum);
         m_itemInfo->spr->setColor(ccGREEN);
         this->reorderChild(m_itemInfo->spr, MD_ACTIVE_TILE);
     }
@@ -498,12 +506,7 @@ void MainScene::ccTouchEnded(CCTouch *pTouch, CCEvent *pEvent)
 {
     if (m_itemInfo){
         if (canAddTile(m_itemInfo->tilex, m_itemInfo->tiley, m_itemInfo->tileNum)){
-            if (m_itemInfo->tileNum == 1){
-                useOneTile(m_itemInfo->tilex, m_itemInfo->tiley);
-            }else if (m_itemInfo->tileNum == 4){
-                use4Tile(m_itemInfo->tilex, m_itemInfo->tiley);
-            }
-
+            retainTile(m_itemInfo->tilex, m_itemInfo->tiley, m_itemInfo->tileNum);
             m_itemInfo->spr->setColor(ccWHITE);
         }else{
             m_itemInfo->spr->setColor(ccRED);
@@ -568,9 +571,22 @@ void MainScene::setSelMapType(int listRow)
     m_touchSpr = 0;
 }
 
-void MainScene::deleteTile(int x, int y)
+void MainScene::deleteTile()
 {
-    CCLOG("ss %d %d", x, y);
+	if (m_itemInfo){
+		this->removeChild(m_itemInfo->spr, true);
+        releaseTile(m_itemInfo->tilex, m_itemInfo->tiley, m_itemInfo->tileNum);
+
+        vector<itemInfo>::iterator iter = m_spriteInMap.begin();
+        for (; iter != m_spriteInMap.end(); ++iter){
+            if (m_itemInfo->spr == iter->spr){
+                m_spriteInMap.erase(iter);
+                break;
+            }
+        }
+
+        m_itemInfo = 0;
+	}
 }
 
 //tile pos -> screen pos -> render pos
@@ -683,31 +699,32 @@ void MainScene::drawMap()
     }
 }  
 
-
-void MainScene::useOneTile(int tilex, int tiley)
+void MainScene::retainTile(int tilex, int tiley, int num)
 {
-    g_mapBit[tilex][tiley] = true;
+    if (!IS_POWER_2(num)){
+        return;
+    }
+
+    int desnum = sqrt((float)num);
+    for (int dx = 0; dx < desnum; ++dx){
+        for (int dy = 0; dy < desnum; ++dy){
+            g_mapBit[tilex + dx][tiley + dy] = 1;
+        }
+    }
 }
 
-void MainScene::use4Tile(int tilex, int tiley)
+void MainScene::releaseTile(int tilex, int tiley, int num)
 {
-    g_mapBit[tilex][tiley] = true;
-    g_mapBit[tilex + 1][tiley] = true;
-    g_mapBit[tilex + 1][tiley + 1] = true;
-    g_mapBit[tilex][tiley + 1] = true;
-}
+    if (!IS_POWER_2(num)){
+        return;
+    }
 
-void MainScene::unuseOneTile(int tilex, int tiley)
-{
-    g_mapBit[tilex][tiley] = false;
-}
-
-void MainScene::unuse4Tile(int tilex, int tiley)
-{
-    g_mapBit[tilex][tiley] = false;
-    g_mapBit[tilex + 1][tiley] = false;
-    g_mapBit[tilex + 1][tiley + 1] = false;
-    g_mapBit[tilex][tiley + 1] = false;
+    int desnum = sqrt((float)num);
+    for (int dx = 0; dx < desnum; ++dx){
+        for (int dy = 0; dy < desnum; ++dy){
+            g_mapBit[tilex + dx][tiley + dy] = 0;
+        }
+    }
 }
 
 void MainScene::printTile(int tilex, int tiley)

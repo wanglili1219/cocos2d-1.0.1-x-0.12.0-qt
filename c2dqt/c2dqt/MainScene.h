@@ -54,7 +54,9 @@ public:
 	static cocos2d::CCScene* scene();
 
 	void setSelMapType(int listRow);
-    void deleteTile(int x, int y);
+    void deleteTile();
+
+    bool onClickMouseKey(int x, int y);
 
     virtual void registerWithTouchDispatcher(void);
     virtual void draw(void);
@@ -80,14 +82,12 @@ private:
 	void addTile2Map(CCSprite* spr, CPoint pcenter, int rpltile);
     CCPoint convertRenderCoor(int tilex, int tiley);
     itemInfo* addTile2DiamondMap(CCSprite* spr, int tilex, int tiley, int pltilenum);
-    bool canAddTile(int tilex, int tiley, int rpltilenum);
-    void useOneTile(int tilex, int tiley);
-    void use4Tile(int tilex, int tiley);
-    void unuseOneTile(int tilex, int tiley);
-    void unuse4Tile(int tilex, int tiley);
+    bool canAddTile(int tilex, int tiley, int num);
+	void useTile(int tilex, int tiley, int num);
     void checkCanAnchor();
     void printTile(int tilex, int tiley);
-
+    void releaseTile(int tilex, int tiley, int num);
+    void retainTile(int tilex, int tiley, int num);
 private:
 	int m_curSelectedMapType;
     CCSprite* m_backgroud;

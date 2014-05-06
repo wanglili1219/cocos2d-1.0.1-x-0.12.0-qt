@@ -57,14 +57,23 @@ void Cocos2dWidget::mousePressEvent(QMouseEvent* evt)
 {  
 	short x = (short)evt->x();
 	short y = (short)evt->y();
-    CCEGLView::sharedOpenGLView().WindowProc(WM_LBUTTONDOWN, MK_LBUTTON, MAKELONG(x, y));
+	if (evt->button() == Qt::LeftButton){
+		CCEGLView::sharedOpenGLView().WindowProc(WM_LBUTTONDOWN, MK_LBUTTON, MAKELONG(x, y));
+	}else if (evt->button() == Qt::RightButton){
+		CCEGLView::sharedOpenGLView().WindowProc(WM_RBUTTONDOWN, MK_LBUTTON, MAKELONG(x, y));
+	}
+	
 }  
 
 void Cocos2dWidget::mouseReleaseEvent(QMouseEvent * evt)
 {
 	short x = (short)evt->x();
 	short y = (short)evt->y();
-	CCEGLView::sharedOpenGLView().WindowProc(WM_LBUTTONUP, MK_LBUTTON, MAKELONG(x, y));
+	if (evt->button() == Qt::LeftButton){
+		CCEGLView::sharedOpenGLView().WindowProc(WM_LBUTTONUP, MK_LBUTTON, MAKELONG(x, y));
+	}else if (evt->button() == Qt::RightButton){
+		CCEGLView::sharedOpenGLView().WindowProc(WM_RBUTTONUP, MK_LBUTTON, MAKELONG(x, y));
+	}
 }
 
 void Cocos2dWidget::mouseDoubleClickEvent(QMouseEvent *)
@@ -101,15 +110,20 @@ void Cocos2dWidget::curveChanged(int row)
 void Cocos2dWidget::slotDelete()
 {
     if (g_mainScene){
-        QCursor cur = this->cursor(); 
-		g_mainScene->deleteTile(cur.pos().x(), cur.pos().y());
+      g_mainScene->deleteTile();
 	}
 }
 
 void Cocos2dWidget::contextMenuEvent(QContextMenuEvent * e) 
 { 
-    QCursor cur = this->cursor(); 
-    QMenu *menu=new QMenu(this); 
-    menu->addAction(m_actDelete); //添加菜单项1 
-    menu->exec(cur.pos()); //关联到光标 
+    if (g_mainScene){
+        if (g_mainScene->onClickMouseKey(e->x(), e->y())){
+            QCursor cur = this->cursor(); 
+            QMenu *menu=new QMenu(this); 
+            menu->addAction(m_actDelete); 
+			int x = cur.pos().x();
+			int y = cur.pos().y();
+            menu->exec(cur.pos()); 
+        }
+    }
 } 

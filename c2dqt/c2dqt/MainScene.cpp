@@ -260,7 +260,7 @@ bool MainScene::init()
 	// position the sprite on the center of the screen
 	m_backgroud->setPosition( ccp(size.width/2, size.height/2) );
 	// add the sprite as a child to this layer
-	this->addChild(m_backgroud, -1);
+	this->addChild(m_backgroud, MD_BACKGROUD);
 
 	//drawMap();
 
@@ -405,6 +405,7 @@ bool MainScene::ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent)
         }
 
         m_itemInfo->spr->setColor(ccGREEN);
+        this->reorderChild(m_itemInfo->spr, MD_ACTIVE_TILE);
     }
 
     if (!m_itemInfo && m_curSelectedMapType > 0){
@@ -507,6 +508,8 @@ void MainScene::ccTouchEnded(CCTouch *pTouch, CCEvent *pEvent)
         }else{
             m_itemInfo->spr->setColor(ccRED);
         }
+
+        this->reorderChild(m_itemInfo->spr, MD_TILE);
     }
 
     m_itemInfo = 0;
@@ -563,6 +566,11 @@ void MainScene::setSelMapType(int listRow)
 {
     m_curSelectedMapType = listRow;
     m_touchSpr = 0;
+}
+
+void MainScene::deleteTile(int x, int y)
+{
+    CCLOG("ss %d %d", x, y);
 }
 
 //tile pos -> screen pos -> render pos

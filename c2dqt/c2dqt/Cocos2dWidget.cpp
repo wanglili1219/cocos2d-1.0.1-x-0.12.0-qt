@@ -6,7 +6,8 @@ USING_NS_CC;
  extern MainScene* g_mainScene;
 Cocos2dWidget::Cocos2dWidget(QWidget* parent,const char* name)
 		: QWidget(parent,Qt::MSWindowsOwnDC)  
-			, layer(0)
+		, layer(0)
+        , m_actDelete(0)
 {  
     this->setFixedSize(480, 320);  
     this->setWindowTitle("Editor");  
@@ -32,6 +33,9 @@ void Cocos2dWidget::initCocos2d()
 	
 	CCApplication::sharedApplication().run(wnd, TEXT("Hello"), 480, 320);
     cocosTimerId = startTimer(1.0/60.0*1000);
+
+    m_actDelete = new QAction(tr("delete"), this); 
+    connect(m_actDelete, SIGNAL(triggered()), this, SLOT(slotDelete())); 
 }  
 
 void Cocos2dWidget::paintEvent(QPaintEvent *evt){  
@@ -65,7 +69,7 @@ void Cocos2dWidget::mouseReleaseEvent(QMouseEvent * evt)
 
 void Cocos2dWidget::mouseDoubleClickEvent(QMouseEvent *)
 {
-
+    
 }
 
 void Cocos2dWidget::mouseMoveEvent(QMouseEvent * evt)
@@ -93,3 +97,19 @@ void Cocos2dWidget::curveChanged(int row)
 		g_mainScene->setSelMapType(row);
 	}
 }
+
+void Cocos2dWidget::slotDelete()
+{
+    if (g_mainScene){
+        QCursor cur = this->cursor(); 
+		g_mainScene->deleteTile(cur.pos().x(), cur.pos().y());
+	}
+}
+
+void Cocos2dWidget::contextMenuEvent(QContextMenuEvent * e) 
+{ 
+    QCursor cur = this->cursor(); 
+    QMenu *menu=new QMenu(this); 
+    menu->addAction(m_actDelete); //添加菜单项1 
+    menu->exec(cur.pos()); //关联到光标 
+} 

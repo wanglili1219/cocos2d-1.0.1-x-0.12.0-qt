@@ -27,9 +27,11 @@ public:
    virtual void mouseReleaseEvent(QMouseEvent *);
    virtual void mouseMoveEvent(QMouseEvent *);
    virtual void mouseDoubleClickEvent(QMouseEvent *);
+   virtual void contextMenuEvent(QContextMenuEvent *);
 
 private slots:
-    void curveChanged(int row);
+     void curveChanged(int row);
+     void slotDelete(); 
 
 private:   
     void updateDraw(); 
@@ -40,4 +42,5 @@ private:
     MainScene * layer;  
     CCParticleSun * m_emitter;  
     CCActionInterval *pEffect;   
+    QAction* m_actDelete; 
 };  

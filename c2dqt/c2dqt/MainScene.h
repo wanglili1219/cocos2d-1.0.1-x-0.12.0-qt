@@ -34,6 +34,14 @@ itemInfo()
 
 class MainScene : public cocos2d::CCLayer
 {
+private:
+     enum 
+     {
+          MD_BACKGROUD = -1,
+          MD_TILE,
+          MD_ACTIVE_TILE,
+     };
+     
 public:
      MainScene();
      ~MainScene();
@@ -46,6 +54,7 @@ public:
 	static cocos2d::CCScene* scene();
 
 	void setSelMapType(int listRow);
+    void deleteTile(int x, int y);
 
     virtual void registerWithTouchDispatcher(void);
     virtual void draw(void);
